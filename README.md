@@ -46,7 +46,7 @@ cmake -H. -Bdbuild64 -DCMAKE_BUILD_TYPE=Debug -DXGL_LLPC_PATH=<PATH_TO_LLPC>
 cd dbuild64
 make
 ```
-To build 32bit library, please add ¡°-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32¡± in cmake.
+To build 32bit library, please add "-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" in cmake.
 
 SPVGEN depends on llpc header files. You can download the files from [here](https://github.com/GPUOpen-Drivers/llpc/include).
 
