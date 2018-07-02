@@ -48,6 +48,6 @@ make
 ```
 To build 32bit library, please add "-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" in cmake.
 
-SPVGEN depends on llpc header files. You can download the files from [here](https://github.com/GPUOpen-Drivers/llpc/include).
+SPVGEN depends on [LLPC](https://github.com/GPUOpen-Drivers/llpc) header files. You need to download the files from llpc/include/.
 
 
