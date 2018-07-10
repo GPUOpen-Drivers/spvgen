@@ -1,9 +1,9 @@
 # SPVGEN
 
-SPVGEN is a libaray to generate SPIR-V binary. It integrates [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).
+SPVGEN is a library to generate SPIR-V binary. It integrates [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).
 
 ## APIs
-The APIs are listed in spvgen.h and vfx.h.
+The APIs are listed in include/spvgen.h and vfx.h.
 
 #### Initialization
 * InitSpvGen()
@@ -20,8 +20,8 @@ The APIs are listed in spvgen.h and vfx.h.
 * spvDisassembleSpirv()
 
 #### Optimize SPIR-V
-* spvOptimizeSpirv
-* spvFreeBuffer
+* spvOptimizeSpirv()
+* spvFreeBuffer()
 
 #### Validate SPIR-V
 * spvValidateSpirv()
@@ -48,6 +48,6 @@ make
 ```
 To build 32bit library, please add "-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" in cmake.
 
-SPVGEN depends on [LLPC](https://github.com/GPUOpen-Drivers/llpc) header files. You need to download the files from llpc/include/.
+SPVGEN references [LLPC](https://github.com/GPUOpen-Drivers/llpc) header files. You need to download the files from llpc/include/.
 
 
