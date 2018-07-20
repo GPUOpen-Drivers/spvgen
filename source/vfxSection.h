@@ -1560,6 +1560,7 @@ public:
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, trapPresent, options.trapPresent, MemberTypeBool,false);
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, debugMode, options.debugMode, MemberTypeBool,false);
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, enablePerformanceData, options.enablePerformanceData, MemberTypeBool,false);
+        INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, allowReZ, options.allowReZ, MemberTypeBool,false);
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, vgprLimit, options.vgprLimit, MemberTypeInt,false);
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, sgprLimit, options.sgprLimit, MemberTypeInt,false);
         INIT_STATE_MEMBER_EXPLICITNAME_TO_ADDR(SectionShaderInfo, maxThreadGroupsPerComputeUnit, options.maxThreadGroupsPerComputeUnit, MemberTypeInt,false);
@@ -1600,7 +1601,7 @@ public:
     };
 
  private:
-    static const uint32_t  MemberCount = 10;
+    static const uint32_t  MemberCount = 11;
     static StrToMemberAddr m_addrTable[MemberCount];
     SubState        m_state;
     SectionSpecInfo specConst;                                            // Specialization constant info
