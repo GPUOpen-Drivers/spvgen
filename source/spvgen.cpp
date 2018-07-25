@@ -72,27 +72,6 @@ extern "C" {
     SH_IMPORT_EXPORT void ShOutputHtml();
 }
 
-// Command-line options
-enum TOptions {
-    EOptionNone               = 0x0000,
-    EOptionIntermediate       = 0x0001,
-    EOptionSuppressInfolog    = 0x0002,
-    EOptionMemoryLeakMode     = 0x0004,
-    EOptionRelaxedErrors      = 0x0008,
-    EOptionGiveWarnings       = 0x0010,
-    EOptionLinkProgram        = 0x0020,
-    EOptionMultiThreaded      = 0x0040,
-    EOptionDumpConfig         = 0x0080,
-    EOptionDumpReflection     = 0x0100,
-    EOptionSuppressWarnings   = 0x0200,
-    EOptionDumpVersions       = 0x0400,
-    EOptionSpv                = 0x0800,
-    EOptionHumanReadableSpv   = 0x1000,
-    EOptionVulkanRules        = 0x2000,
-    EOptionDefaultDesktop     = 0x4000,
-    EOptionOutputPreprocessed = 0x8000,
-};
-
 //
 // Return codes from main.
 //
@@ -125,7 +104,10 @@ int NumShaderStrings;
 
 TBuiltInResource Resources;
 char ConfigFile[MAX_PATH];
-int Options = EOptionSpv | EOptionDefaultDesktop | EOptionVulkanRules;
+int defaultOptions = EOptionDefaultDesktop | EOptionVulkanRules;
+
+// Set the version of the input semantics.
+int ClientInputSemanticsVersion = 100;
 //
 // These are the default resources for TBuiltInResources, used for both
 //  - parsing this string for the case where the user didn't supply one
@@ -479,20 +461,19 @@ bool SetConfigFile(const std::string& name)
 //
 // Translate the meaningful subset of command-line options to parser-behavior options.
 //
-void SetMessageOptions(EShMessages& messages)
+void SetMessageOptions(EShMessages& messages, int options)
 {
-    if (Options & EOptionRelaxedErrors)
-        messages = (EShMessages)(messages | EShMsgRelaxedErrors);
-    if (Options & EOptionIntermediate)
-        messages = (EShMessages)(messages | EShMsgAST);
-    if (Options & EOptionSuppressWarnings)
-        messages = (EShMessages)(messages | EShMsgSuppressWarnings);
-    if (Options & EOptionSpv)
-        messages = (EShMessages)(messages | EShMsgSpvRules);
-    if (Options & EOptionVulkanRules)
+    messages = (EShMessages)(messages | EShMsgSpvRules);
+    if (options & EOptionVulkanRules)
         messages = (EShMessages)(messages | EShMsgVulkanRules);
-    if (Options & EOptionOutputPreprocessed)
-        messages = (EShMessages)(messages | EShMsgOnlyPreprocessor);
+    if (options & EOptionReadHlsl)
+        messages = (EShMessages)(messages | EShMsgReadHlsl);
+    if (options & EOptionHlslOffsets)
+        messages = (EShMessages)(messages | EShMsgHlslOffsets);
+    if (options & EOptionDebug)
+        messages = (EShMessages)(messages | EShMsgDebugInfo);
+    if (options & EOptionOptimizeDisable)
+        messages = (EShMessages)(messages | EShMsgHlslLegalization);
 }
 
 class OGLProgram : public glslang::TProgram
@@ -564,7 +545,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
     std::list<glslang::TShader*> shaders;
 
     EShMessages messages = EShMsgDefault;
-    SetMessageOptions(messages);
+    SetMessageOptions(messages, defaultOptions);
 
     //
     // Per-shader processing...
@@ -585,16 +566,10 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
 
         shader->setStrings(shaderStrings, 1);
 
-        if (! shader->parse(&Resources, (Options & EOptionDefaultDesktop) ? 110 : 100, false, messages))
+        if (! shader->parse(&Resources, (defaultOptions & EOptionDefaultDesktop) ? 110 : 100, false, messages))
             CompileFailed = true;
 
         program.addShader(shader);
-
-        if (! (Options & EOptionSuppressInfolog)) {
-            program.AddLog(fileList[i]);
-            program.AddLog(shader->getInfoLog());
-            program.AddLog(shader->getInfoDebugLog());
-        }
 
         FreeFileData(shaderStrings);
     }
@@ -606,45 +581,15 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
     if (! program.link(messages))
         LinkFailed = true;
 
-    if (! (Options & EOptionSuppressInfolog)) {
-        program.AddLog(program.getInfoLog());
-        program.AddLog(program.getInfoDebugLog());
-    }
-
-    if (Options & EOptionDumpReflection) {
-        program.buildReflection();
-        //program.dumpReflection();
-    }
-
     if (CompileFailed || LinkFailed)
     {
         *ppLog = program.programLog.c_str();
         return false;
     }
 
-    if (Options & EOptionSpv)
-    {
-        for (int stage = 0; stage < EShLangCount; ++stage) {
-            if (program.getIntermediate((EShLanguage)stage)) {
-                glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage]);
-                const char* name;
-                switch (stage) {
-                case EShLangVertex:          name = "vert";    break;
-                case EShLangTessControl:     name = "tesc";    break;
-                case EShLangTessEvaluation:  name = "tese";    break;
-                case EShLangGeometry:        name = "geom";    break;
-                case EShLangFragment:        name = "frag";    break;
-                case EShLangCompute:         name = "comp";    break;
-                default:                     name = "unknown"; break;
-                }
-                //glslang::OutputSpv(spirv, name);
-                if (Options & EOptionHumanReadableSpv) {
-                    std::string spvDisassembleStr;
-                    std::stringstream outstr;
-                    outstr.str(spvDisassembleStr);
-                    spv::Disassemble(outstr, program.spirv[stage]);
-                }
-            }
+    for (int stage = 0; stage < EShLangCount; ++stage) {
+        if (program.getIntermediate((EShLanguage)stage)) {
+            glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage]);
         }
     }
     *ppLog = program.programLog.c_str();
@@ -663,11 +608,31 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
     void**               pProgram,
     const char**         ppLog)
 {
+    return spvCompileAndLinkProgramWithOptions(shaderStageSourceCounts,
+                                               shaderStageSources,
+                                               pProgram,
+                                               ppLog,
+                                               defaultOptions);
+}
+
+//
+// Compile and link GLSL source strings with options
+//
+// NOTE: Uses the new C++ interface instead of the old handle-based interface.
+// and user must call spvDestroyProgram explictly to destroy program object
+//
+bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
+    int                  shaderStageSourceCounts[EShLangCount],
+    const char* const *  shaderStageSources[EShLangCount],
+    void**               pProgram,
+    const char**         ppLog,
+    int                  options)
+{
     // keep track of what to free
     std::list<glslang::TShader*> shaders;
 
     EShMessages messages = EShMsgDefault;
-    SetMessageOptions(messages);
+    SetMessageOptions(messages, options);
 
     //
     // Per-shader processing...
@@ -685,26 +650,43 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
 
             shader->setStrings(shaderStageSources[i], shaderStageSourceCounts[i]);
 
-            shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
+            if (options & EOptionVulkanRules) {
+                shader->setEnvInput((options & EOptionReadHlsl) ? glslang::EShSourceHlsl
+                    : glslang::EShSourceGlsl,
+                    (EShLanguage)i, glslang::EShClientVulkan, ClientInputSemanticsVersion);
+                shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
+            }
+            else {
+                shader->setEnvInput((options & EOptionReadHlsl) ? glslang::EShSourceHlsl
+                    : glslang::EShSourceGlsl,
+                    (EShLanguage)i, glslang::EShClientOpenGL, ClientInputSemanticsVersion);
+                shader->setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
+            }
             shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
 
-            if (!shader->parse(&Resources, (Options & EOptionDefaultDesktop) ? 110 : 100, false, messages))
+            if ((options & EOptionFlattenUniformArrays) != 0 &&
+                (options & EOptionReadHlsl) == 0) {
+                printf("uniform array flattening only valid when compiling HLSL source.");
+                return false;
+            }
+            shader->setFlattenUniformArrays((options & EOptionFlattenUniformArrays) != 0);
+
+            if (options & EOptionHlslIoMapping)
+                shader->setHlslIoMapping(true);
+
+            if (options & EOptionAutoMapBindings)
+                shader->setAutoMapBindings(true);
+
+            if (options & EOptionAutoMapLocations)
+                shader->setAutoMapLocations(true);
+
+            if (options & EOptionInvertY)
+                shader->setInvertY(true);
+
+            if (!shader->parse(&Resources, (options & EOptionDefaultDesktop) ? 110 : 100, false, messages))
                 CompileFailed = true;
 
             program.addShader(shader);
-
-            if (!(Options & EOptionSuppressInfolog)) {
-                const char* pInfoLog = shader->getInfoLog();
-                const char* pDebugLog = shader->getInfoDebugLog();
-                if ((strlen(pInfoLog) > 0) || (strlen(pDebugLog) > 0))
-                {
-                    char buffer[256];
-                    sprintf(buffer, "Compiling %s stage:\n", glslang::StageName((EShLanguage)i));
-                    program.AddLog(buffer);
-                    program.AddLog(shader->getInfoLog());
-                    program.AddLog(shader->getInfoDebugLog());
-                }
-            }
         }
     }
 
@@ -713,6 +695,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
         *ppLog = program.programLog.c_str();
         return false;
     }
+
     //
     // Program-level processing...
     //
@@ -720,52 +703,22 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
     if (!program.link(messages))
         LinkFailed = true;
 
-    if (!(Options & EOptionSuppressInfolog)) {
-        std::string formatLog;
-        program.FormatLinkInfo(program.getInfoLog(), formatLog);
-        if (formatLog.size() > 0 || strlen(program.getInfoDebugLog()) > 0)
-        {
-            program.AddLog(formatLog.c_str());
-            program.AddLog(program.getInfoDebugLog());
-        }
-    }
-
-    if (Options & EOptionDumpReflection) {
-        program.buildReflection();
-        //program.dumpReflection();
-    }
-
     if (LinkFailed)
     {
         *ppLog = program.programLog.c_str();
         return false;
     }
 
-    if (Options & EOptionSpv)
-    {
-        for (int stage = 0; stage < EShLangCount; ++stage) {
-            if (program.getIntermediate((EShLanguage)stage)) {
-                glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage]);
-                const char* name;
-                switch (stage) {
-                case EShLangVertex:          name = "vert";    break;
-                case EShLangTessControl:     name = "tesc";    break;
-                case EShLangTessEvaluation:  name = "tese";    break;
-                case EShLangGeometry:        name = "geom";    break;
-                case EShLangFragment:        name = "frag";    break;
-                case EShLangCompute:         name = "comp";    break;
-                default:                     name = "unknown"; break;
-                }
-                //glslang::OutputSpv(spirv, name);
-                if (Options & EOptionHumanReadableSpv) {
-                    std::string spvDisassembleStr;
-                    std::stringstream outstr;
-                    outstr.str(spvDisassembleStr);
-                    spv::Disassemble(outstr, program.spirv[stage]);
-                }
-            }
+    for (int stage = 0; stage < EShLangCount; ++stage) {
+        if (program.getIntermediate((EShLanguage)stage)) {
+            glslang::SpvOptions spvOptions;
+            spvOptions.generateDebugInfo = (options & EOptionDebug) != 0;
+            spvOptions.disableOptimizer = (options & EOptionOptimizeDisable) != 0;
+            spvOptions.optimizeSize = (options & EOptionOptimizeSize) != 0;
+            glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage], &spvOptions);
         }
     }
+
     *ppLog = program.programLog.c_str();
     return true;
 }
