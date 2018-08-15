@@ -103,6 +103,7 @@ VfxPipelineStatePtr PipelineDocument::GetDocument()
         pGfxPipelineInfo->rsState.numSamples              = graphicState.numSamples;
         pGfxPipelineInfo->rsState.samplePatternIdx        = graphicState.samplePatternIdx;
         pGfxPipelineInfo->rsState.usrClipPlaneMask        = static_cast<uint8_t>(graphicState.usrClipPlaneMask);
+
         pGfxPipelineInfo->cbState.alphaToCoverageEnable   = graphicState.alphaToCoverageEnable ? true : false;
         pGfxPipelineInfo->cbState.dualSourceBlendEnable   = graphicState.dualSourceBlendEnable ? true : false;
         for (uint32_t i = 0; i < MaxColorTargets; ++i)
@@ -114,7 +115,17 @@ VfxPipelineStatePtr PipelineDocument::GetDocument()
             pGfxPipelineInfo->cbState.target[i].blendSrcAlphaToColor =
                 graphicState.colorBuffer[i].blendSrcAlphaToColor ? true : false;
         }
+
         pGfxPipelineInfo->options.includeDisassembly      = graphicState.includeDisassembly ? true : false;
+
+        pGfxPipelineInfo->nggState.enableNgg              = graphicState.enableNgg ? true : false;
+        pGfxPipelineInfo->nggState.enableFastLaunch       = graphicState.enableFastLaunch ? true : false;
+        pGfxPipelineInfo->nggState.enableVertexReuse      = graphicState.enableVertexReuse ? true : false;
+        pGfxPipelineInfo->nggState.disableBackfaceCulling = graphicState.disableBackfaceCulling ? true : false;
+        pGfxPipelineInfo->nggState.enableFrustumCulling   = graphicState.enableFrustumCulling ? true : false;
+        pGfxPipelineInfo->nggState.enableBoxFilterCulling = graphicState.enableBoxFilterCulling ? true : false;
+        pGfxPipelineInfo->nggState.enableSphereCulling    = graphicState.enableSphereCulling ? true : false;
+        pGfxPipelineInfo->nggState.enableSmallPrimFilter  = graphicState.enableSmallPrimFilter ? true : false;
     }
 
     // Section "ComputePipelineState"

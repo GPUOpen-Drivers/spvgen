@@ -687,6 +687,17 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
                 CompileFailed = true;
 
             program.addShader(shader);
+
+            const char* pInfoLog = shader->getInfoLog();
+            const char* pDebugLog = shader->getInfoDebugLog();
+            if ((strlen(pInfoLog) > 0) || (strlen(pDebugLog) > 0))
+            {
+                char buffer[256];
+                sprintf(buffer, "Compiling %s stage:\n", glslang::StageName((EShLanguage)i));
+                program.AddLog(buffer);
+                program.AddLog(shader->getInfoLog());
+                program.AddLog(shader->getInfoDebugLog());
+            }
         }
     }
 

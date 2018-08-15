@@ -573,6 +573,16 @@ struct GraphicsPipelineState
     uint32_t    switchWinding;                // reverse the TCS declared output primitive vertex order
     uint32_t    enableMultiView;              // Whether to enable multi-view support
     uint32_t    includeDisassembly;           // Whenther to include the disassembly code in the pipeline ELF
+
+    uint32_t    enableNgg;                    // Enable NGG mode, use an implicit primitive shader
+    uint32_t    enableFastLaunch;             // Enables the hardware to launch subgroups of work at a faster rate
+    uint32_t    enableVertexReuse;            // Enable optimization to cull duplicate vertices
+    uint32_t    disableBackfaceCulling;       // Disables culling of primitives that don't meet facing criteria
+    uint32_t    enableFrustumCulling;         // Enables discarding of primitives outside of view frustum
+    uint32_t    enableBoxFilterCulling;       // Enable simpler frustum culler that is less accurate
+    uint32_t    enableSphereCulling;          // Enable frustum culling based on a sphere
+    uint32_t    enableSmallPrimFilter;        // Enables trivial sub-sample primitive culling
+
     ColorBuffer colorBuffer[MaxColorTargets]; // Color target state.
 };
 
