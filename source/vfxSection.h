@@ -276,13 +276,15 @@ public:
     void SetActive(bool isActive) { m_isActive = isActive; }
 
     void PrintSelf(uint32_t level);
+
+    void SetLineNum(uint32_t lineNum) { m_lineNum = lineNum; }
 private:
     Section() {};
 
 protected:
     SectionType               m_sectionType;        // Section type
     const char*               m_pSectionName;       // Section name
-
+    uint32_t                  m_lineNum;            // Line number of this section
 private:
     StrToMemberAddr*          m_pMemberTable;      // Member address table
     uint32_t                  m_tableSize;         // Address table size

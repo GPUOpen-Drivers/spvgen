@@ -124,6 +124,7 @@ Section::Section(
     :
     m_sectionType(sectionType),
     m_pSectionName(pSectionName),
+    m_lineNum(0),
     m_pMemberTable(pAddrTable),
     m_tableSize(tableSize),
     m_isActive(false)
@@ -758,8 +759,12 @@ bool SectionShader::CompileGlsl(
 
     sourceStringCount[stage] = 1;
     sourceList[stage] = &pGlslText;
-
-    bool compileResult = spvCompileAndLinkProgram(sourceStringCount, sourceList, &pProgram, &pLog);
+    int compileOption = EOptionDefaultDesktop | EOptionVulkanRules | EOptionDebug;
+    bool compileResult = spvCompileAndLinkProgramWithOptions(sourceStringCount,
+                                                             sourceList,
+                                                             &pProgram,
+                                                             &pLog,
+                                                             compileOption);
 
     if (compileResult)
     {
@@ -770,7 +775,7 @@ bool SectionShader::CompileGlsl(
     }
     else
     {
-        PARSE_ERROR(*pErrorMsg, "Fail to compile GLSL\n%s\n", pLog);
+        PARSE_ERROR(*pErrorMsg, m_lineNum, "Fail to compile GLSL\n%s\n", pLog);
         result = false;
     }
 
@@ -804,7 +809,7 @@ bool SectionShader::AssembleSpirv(
     }
     else
     {
-        PARSE_ERROR(*pErrorMsg, "Fail to Assemble SPIRV\n%s\n", pLog);
+        PARSE_ERROR(*pErrorMsg, m_lineNum, "Fail to Assemble SPIRV\n%s\n", pLog);
         result = false;
     }
 
