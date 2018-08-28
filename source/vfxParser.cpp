@@ -236,6 +236,7 @@ bool VfxParser::BeginSection(
             m_currentSectionLineNum       = m_currentLineNum + 1;
             m_currentSectionStringBuffer.str("");
             m_currentSectionStringBuffer.clear();
+            m_pCurrentSection->SetLineNum(m_currentLineNum);
         }
     }
 

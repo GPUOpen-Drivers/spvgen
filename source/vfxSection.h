@@ -276,13 +276,15 @@ public:
     void SetActive(bool isActive) { m_isActive = isActive; }
 
     void PrintSelf(uint32_t level);
+
+    void SetLineNum(uint32_t lineNum) { m_lineNum = lineNum; }
 private:
     Section() {};
 
 protected:
     SectionType               m_sectionType;        // Section type
     const char*               m_pSectionName;       // Section name
-
+    uint32_t                  m_lineNum;            // Line number of this section
 private:
     StrToMemberAddr*          m_pMemberTable;      // Member address table
     uint32_t                  m_tableSize;         // Address table size
@@ -1112,6 +1114,16 @@ public:
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, switchWinding,           MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableMultiView,         MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, includeDisassembly,      MemberTypeInt, false);
+
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableNgg,               MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableFastLaunch,        MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableVertexReuse,       MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, disableBackfaceCulling,  MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableFrustumCulling,    MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableBoxFilterCulling,  MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableSphereCulling,     MemberTypeInt, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableSmallPrimFilter,   MemberTypeInt, false);
+
         INIT_MEMBER_ARRAY_NAME_TO_ADDR(SectionGraphicsState,
                                        colorBuffer,
                                        MemberTypeColorBufferItem,
@@ -1130,7 +1142,7 @@ public:
     };
 
  private:
-    static const uint32_t  MemberCount = 16;
+    static const uint32_t  MemberCount = 24;
     static StrToMemberAddr m_addrTable[MemberCount];
 
     SubState               m_state;
