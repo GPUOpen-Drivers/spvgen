@@ -527,6 +527,10 @@ struct DrawState
     uint32_t              firstIndex;                               // First index in draw index
     uint32_t              vertexOffset;                             // Vertex offset in draw index
     VkPrimitiveTopology   topology;                                 // Primitive topology
+    VkPolygonMode         polygonMode;                              // Triangle rendering mode
+    VkCullModeFlags       cullMode;                                 // Fragment culling mode
+    VkFrontFace           frontFace;                                // Front-facing triangle orientation
+    uint32_t              depthBiasEnable;                          // Whether to bias fragment depth values
     uint32_t              patchControlPoints;                       // Patch control points
     IUFValue              dispatch;                                 // Dispatch dimension
     uint32_t              width;                                    // Window width
@@ -559,6 +563,10 @@ struct ColorBuffer
 struct GraphicsPipelineState
 {
     VkPrimitiveTopology  topology;            // Primitive type
+    VkPolygonMode        polygonMode;         // Triangle rendering mode
+    VkCullModeFlags      cullMode;            // Fragment culling mode
+    VkFrontFace          frontFace;           // Front-facing triangle orientation
+    uint32_t             depthBiasEnable;     // Whether to bias fragment depth values
     uint32_t    patchControlPoints;           // Patch control points
     uint32_t    deviceIndex;                  // Device index for device group
     uint32_t    disableVertexReuse;           // Disable reusing vertex shader output for indexed draws
@@ -573,15 +581,6 @@ struct GraphicsPipelineState
     uint32_t    switchWinding;                // reverse the TCS declared output primitive vertex order
     uint32_t    enableMultiView;              // Whether to enable multi-view support
     uint32_t    includeDisassembly;           // Whenther to include the disassembly code in the pipeline ELF
-
-    uint32_t    enableNgg;                    // Enable NGG mode, use an implicit primitive shader
-    uint32_t    enableFastLaunch;             // Enables the hardware to launch subgroups of work at a faster rate
-    uint32_t    enableVertexReuse;            // Enable optimization to cull duplicate vertices
-    uint32_t    disableBackfaceCulling;       // Disables culling of primitives that don't meet facing criteria
-    uint32_t    enableFrustumCulling;         // Enables discarding of primitives outside of view frustum
-    uint32_t    enableBoxFilterCulling;       // Enable simpler frustum culler that is less accurate
-    uint32_t    enableSphereCulling;          // Enable frustum culling based on a sphere
-    uint32_t    enableSmallPrimFilter;        // Enables trivial sub-sample primitive culling
 
     ColorBuffer colorBuffer[MaxColorTargets]; // Color target state.
 };

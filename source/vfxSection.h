@@ -916,6 +916,10 @@ public:
         state.firstIndex = 0;
         state.vertexOffset = 0;
         state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+        state.polygonMode = VK_POLYGON_MODE_FILL;
+        state.cullMode = VK_CULL_MODE_NONE;
+        state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        state.depthBiasEnable = false;
         state.width = 0;
         state.height = 0;
         state.lineWidth = 1.0f;
@@ -932,6 +936,10 @@ public:
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, firstIndex,     MemberTypeInt,      false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, vertexOffset,   MemberTypeInt,      false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, topology,       MemberTypeEnum,     false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, polygonMode,    MemberTypeEnum,     false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, cullMode,       MemberTypeEnum,     false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, frontFace,      MemberTypeEnum,     false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, depthBiasEnable,    MemberTypeInt,  false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, patchControlPoints, MemberTypeInt,  false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, dispatch,       MemberTypeIVec4,    false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionDrawState, width,          MemberTypeInt,      false);
@@ -968,7 +976,7 @@ public:
     };
 
 private:
-    static const uint32_t  MemberCount = 21;
+    static const uint32_t  MemberCount = 25;
     static StrToMemberAddr m_addrTable[MemberCount];
     SubState               m_state;
     SectionSpecConst       vs;                                       // Vertex shader's spec constant
@@ -1100,6 +1108,10 @@ public:
     {
         StrToMemberAddr* pTableItem = m_addrTable;
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, topology,                MemberTypeEnum, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, polygonMode,             MemberTypeEnum, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, cullMode,                MemberTypeEnum, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, frontFace,               MemberTypeEnum, false);
+        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, depthBiasEnable,         MemberTypeInt,  false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, patchControlPoints,      MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, deviceIndex,             MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, disableVertexReuse,      MemberTypeInt, false);
@@ -1114,15 +1126,6 @@ public:
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, switchWinding,           MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableMultiView,         MemberTypeInt, false);
         INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, includeDisassembly,      MemberTypeInt, false);
-
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableNgg,               MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableFastLaunch,        MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableVertexReuse,       MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, disableBackfaceCulling,  MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableFrustumCulling,    MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableBoxFilterCulling,  MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableSphereCulling,     MemberTypeInt, false);
-        INIT_STATE_MEMBER_NAME_TO_ADDR(SectionGraphicsState, enableSmallPrimFilter,   MemberTypeInt, false);
 
         INIT_MEMBER_ARRAY_NAME_TO_ADDR(SectionGraphicsState,
                                        colorBuffer,
@@ -1142,7 +1145,7 @@ public:
     };
 
  private:
-    static const uint32_t  MemberCount = 24;
+    static const uint32_t  MemberCount = 20;
     static StrToMemberAddr m_addrTable[MemberCount];
 
     SubState               m_state;
