@@ -311,15 +311,10 @@ bool VfxParser::ParseSectionKeyValues()
             break;
         }
 
-        result = ParseKeyValue(pKey,
+        ParseKeyValue(pKey,
                       pValue,
                       lineNum,
                       m_pCurrentSection);
-
-        if (result == false)
-        {
-            break;
-        }
 
         ++lineNum;
     }

@@ -32,6 +32,8 @@
 #include <assert.h>
 #include <string.h>
 #include "glslang/Public/ShaderLang.h"
+#define SH_EXPORTING
+#include "spvgen.h"
 #include "vfx.h"
 #include "vfxEnumsConverter.h"
 

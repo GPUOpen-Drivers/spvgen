@@ -53,10 +53,13 @@ class GitRepo:
         found = False;
         for line in lines:
             if (found == True):
-                self.revision = line[7:];
-                break;
+                if (line.find("Commit:") == 0):
+                    self.revision = line[7:];
+                    break;
             if (self.moduleName.lower() in line.lower()):
                 found = True;
+            else:
+                found = False;
         revFile.close();
 
         if (found == False):
@@ -73,6 +76,7 @@ class GitRepo:
             return;
 
         os.chdir(fullDstPath);
+        os.system("git pull");
         os.system("git checkout " + self.revision);
 
 PACKAGES = [

@@ -86,6 +86,15 @@ static const size_t MaxLineBufSize  = 512;  // Buffer size to parse a line in VF
     errorMsg += errorBuf; \
 }
 
+#define PARSE_WARNING(errorMsg, lineNum, ...) { \
+    char errorBuf[4096]; \
+    int pos = Snprintf(errorBuf, 4096, "Parse warning at line %u: ", lineNum); \
+    pos += Snprintf(errorBuf + pos, 4096 - pos, __VA_ARGS__); \
+    pos += Snprintf(errorBuf + pos, 4096 - pos, "\n"); \
+    VFX_ASSERT(pos < 4096); \
+    errorMsg += errorBuf; \
+}
+
 namespace Math
 {
     inline uint32_t Absu(
@@ -610,7 +619,7 @@ struct VfxRenderState
     Vfx::ImageView    imageView[Vfx::MaxSectionCount];          // Section "ImageView"
     uint32_t          numSampler;                               // Number of section "Sampler"
     Vfx::Sampler      sampler[Vfx::MaxSectionCount];            // Section "Sampler"
-    Vfx::ShaderSource stages[EShLangCount];                     // Shader source sections
+    Vfx::ShaderSource stages[VkStageCount];                     // Shader source sections
 };
 
 #ifndef DISABLE_PIPLINE_DOC

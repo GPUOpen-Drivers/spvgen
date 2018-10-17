@@ -235,7 +235,7 @@ bool Section::GetMemberType(
 
     if (result == false)
     {
-        PARSE_ERROR(*pErrorMsg, lineNum, "Invalid member name: %s", pMemberName);
+        PARSE_WARNING(*pErrorMsg, lineNum, "Invalid member name: %s", pMemberName);
     }
 
     return result;
@@ -272,7 +272,7 @@ bool Section::IsSection(
 
     if (result == false)
     {
-        PARSE_ERROR(*pErrorMsg, lineNum, "Invalid member name: %s", pMemberName);
+        PARSE_WARNING(*pErrorMsg, lineNum, "Invalid member name: %s", pMemberName);
     }
 
     return result;

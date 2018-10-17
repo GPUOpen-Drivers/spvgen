@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 46e0731
-Date: 2018/04/26
-46e0731 GLSL/Vulkan: Warn about arrays of arrays of resources that need bindings.
+Commit: a8453d4
+Date: 2018/09/25
+a8453d4 SPIRV-Tools: Move to more recent (higher quality) version.
 
 [SPIRV-tools]
-Commit: 72524db
-Date: 2018/04/26
-72524db Fixes #1521: PadToWord() should use std::move() in && variant
+Commit: 90a12b3
+Date: 2018/09/25
+90a12b3 Decoration validation for Vulkan memory model
 
 [SPIRV-headers]
-Commit: 3a4dbdd
-Date: 2018/04/26
-3a4dbdd Merge pull request #68 from dneto0/hlsl-decorate-string
+Commit: d5b2e12
+Date: 2018/09/25
+d5b2e12 Fix D -> d typo in previous commit.

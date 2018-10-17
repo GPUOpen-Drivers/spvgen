@@ -85,6 +85,8 @@ enum TOptions {
     EOptionInvertY = (1 << 11),
 };
 
+#define VkStageCount 6
+
 #ifdef SH_EXPORTING
 
 #ifdef __cplusplus
@@ -97,14 +99,14 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
     const char**    ppLog);
 
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
-    int                sourceStringCount[EShLangCount],
-    const char* const* sourceList[EShLangCount],
+    int                sourceStringCount[VkStageCount],
+    const char* const* sourceList[VkStageCount],
     void**             pProgram,
     const char**       ppLog);
 
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
-    int                sourceStringCount[EShLangCount],
-    const char* const* sourceList[EShLangCount],
+    int                sourceStringCount[VkStageCount],
+    const char* const* sourceList[VkStageCount],
     void**             pProgram,
     const char**       ppLog,
     int                options);
@@ -200,14 +202,14 @@ typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvCompileAndLinkProgramFromFile)(
     const char**    ppLog);
 
 typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvCompileAndLinkProgram)(
-    int                sourceStringCount[EShLangCount],
-    const char* const* sourceList[EShLangCount],
+    int                sourceStringCount[VkStageCount],
+    const char* const* sourceList[VkStageCount],
     void**             pProgram,
     const char**       ppLog);
 
 typedef bool SH_IMPORT_EXPORT(SPVAPI* PFN_spvCompileAndLinkProgramWithOptions)(
-    int                sourceStringCount[EShLangCount],
-    const char* const* sourceList[EShLangCount],
+    int                sourceStringCount[VkStageCount],
+    const char* const* sourceList[VkStageCount],
     void**             pProgram,
     const char**       ppLog,
     int                options);

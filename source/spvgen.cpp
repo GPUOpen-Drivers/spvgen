@@ -47,7 +47,6 @@
 #include "SPIRV/GlslangToSpv.h"
 #include "spirv-tools/libspirv.h"
 #include "spirv-tools/optimizer.hpp"
-#include "../source/message.h"
 
 #include "doc.h"
 namespace spv {
@@ -481,7 +480,7 @@ class OGLProgram : public glslang::TProgram
 public:
     ~OGLProgram()
     {
-        for(int i = 0; i<EShLangCount; ++i)
+        for(int i = 0; i< VkStageCount; ++i)
         {
             std::list<glslang::TShader*>::iterator it;
             for(it = stages[i].begin(); it != stages[i].end(); ++it)
@@ -498,12 +497,12 @@ public:
     void FormatLinkInfo(const char* linkInfo, std::string& formatedString)
     {
         char buffer[256];
-        char* infoEntry[EShLangCount] = {};
+        char* infoEntry[VkStageCount] = {};
         int length = (int)strlen(linkInfo);
         char* pInfoCopy = new char [length + 1];
         char* pLog = pInfoCopy;
         strcpy(pLog, linkInfo);
-        for (int i = 0; i < EShLangCount; ++i)
+        for (int i = 0; i < VkStageCount; ++i)
         {
             sprintf(buffer, "\nLinked %s stage:\n\n", glslang::StageName((EShLanguage)i));
             infoEntry[i] = strstr(pLog, buffer);
@@ -515,7 +514,7 @@ public:
             }
         }
 
-        for (int i = 0; i < EShLangCount; ++i)
+        for (int i = 0; i < VkStageCount; ++i)
         {
             if ((infoEntry[i] != nullptr) && (strlen(infoEntry[i]) > 0))
             {
@@ -526,7 +525,7 @@ public:
         }
     }
     std::string               programLog;
-    std::vector<unsigned int> spirv[EShLangCount];
+    std::vector<unsigned int> spirv[VkStageCount];
 };
 
 //
@@ -587,7 +586,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
         return false;
     }
 
-    for (int stage = 0; stage < EShLangCount; ++stage) {
+    for (int stage = 0; stage < VkStageCount; ++stage) {
         if (program.getIntermediate((EShLanguage)stage)) {
             glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage]);
         }
@@ -603,8 +602,8 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
 // and user must call spvDestroyProgram explictly to destroy program object
 //
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
-    int                  shaderStageSourceCounts[EShLangCount],
-    const char* const *  shaderStageSources[EShLangCount],
+    int                  shaderStageSourceCounts[VkStageCount],
+    const char* const *  shaderStageSources[VkStageCount],
     void**               pProgram,
     const char**         ppLog)
 {
@@ -622,8 +621,8 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
 // and user must call spvDestroyProgram explictly to destroy program object
 //
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
-    int                  shaderStageSourceCounts[EShLangCount],
-    const char* const *  shaderStageSources[EShLangCount],
+    int                  shaderStageSourceCounts[VkStageCount],
+    const char* const *  shaderStageSources[VkStageCount],
     void**               pProgram,
     const char**         ppLog,
     int                  options)
@@ -641,7 +640,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
     OGLProgram& program = *new OGLProgram;
     *pProgram = &program;
 
-    for (int i = 0; i < EShLangCount; ++i)
+    for (int i = 0; i < VkStageCount; ++i)
     {
         if (shaderStageSourceCounts[i] > 0)
         {
@@ -720,7 +719,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
         return false;
     }
 
-    for (int stage = 0; stage < EShLangCount; ++stage) {
+    for (int stage = 0; stage < VkStageCount; ++stage) {
         if (program.getIntermediate((EShLanguage)stage)) {
             glslang::SpvOptions spvOptions;
             spvOptions.generateDebugInfo = (options & EOptionDebug) != 0;
@@ -949,7 +948,36 @@ bool SH_IMPORT_EXPORT spvOptimizeSpirv(
                                      const spv_position_t& position,
                                      const char* message)
         {
-            errorMsg += spvtools::StringifyMessage(level, source, position, message);
+            const char* level_string = nullptr;
+            switch (level)
+            {
+                case SPV_MSG_FATAL:
+                    level_string = "fatal";
+                    break;
+                case SPV_MSG_INTERNAL_ERROR:
+                    level_string = "internal error";
+                    break;
+                case SPV_MSG_ERROR:
+                    level_string = "error";
+                    break;
+                case SPV_MSG_WARNING:
+                    level_string = "warning";
+                    break;
+                case SPV_MSG_INFO:
+                    level_string = "info";
+                    break;
+                case SPV_MSG_DEBUG:
+                    level_string = "debug";
+                    break;
+            }
+            std::ostringstream oss;
+            oss << level_string << ": ";
+            if (source) oss << source << ":";
+            oss << position.line << ":" << position.column << ":";
+            oss << position.index << ": ";
+            if (message) oss << message;
+
+            errorMsg += oss.str();
             errorMsg += "\n";
         }
     );

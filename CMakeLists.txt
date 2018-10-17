@@ -37,6 +37,12 @@ set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to 
 
 set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
 
+# Enable NV_extension, otherwise the headers are included by spvgen is not same as glslang since it is enabled in
+# glslang.
+add_definitions(-DNV_EXTENSIONS)
+
+add_definitions(-DAMD_EXTENSIONS)
+
 add_subdirectory(external/glslang)
 
 add_subdirectory(external/SPIRV-tools)
