@@ -64,6 +64,7 @@ namespace spv {
 #include <stdarg.h>
 
 #include "spvgen.h"
+#include "vfx.h"
 
 #define MAX_PATH 256
 
@@ -749,7 +750,7 @@ void SH_IMPORT_EXPORT spvDestroyProgram(
 // NOTE: 0 is returned if SPIRVI binary isn't exist for specified shader stage
 int SH_IMPORT_EXPORT spvGetSpirvBinaryFromProgram(
     void*                hProgram,
-    EShLanguage          stage,
+    int                  stage,
     const unsigned int** ppData)
 {
     OGLProgram* pProgram = reinterpret_cast<OGLProgram*>(hProgram);
@@ -1024,6 +1025,46 @@ void SH_IMPORT_EXPORT spvFreeBuffer(
     void* pBuffer)
 {
     free(pBuffer);
+}
+
+//
+// Export stubs for VFX functions.
+//
+bool SH_IMPORT_EXPORT vfxParseFile(
+    const char*  pFilename,
+    unsigned int numMacro,
+    const char*  pMacros[],
+    VfxDocType   type,
+    void**       ppDoc,
+    const char** ppErrorMsg)
+{
+    return Vfx::vfxParseFile(pFilename, numMacro, pMacros, type, ppDoc, ppErrorMsg);
+}
+
+void SH_IMPORT_EXPORT vfxCloseDoc(
+    void* pDoc)
+{
+    Vfx::vfxCloseDoc(pDoc);
+}
+
+void SH_IMPORT_EXPORT vfxGetRenderDoc(
+    void*              pDoc,
+    VfxRenderStatePtr* pRenderState)
+{
+    Vfx::vfxGetRenderDoc(pDoc, pRenderState);
+}
+
+void SH_IMPORT_EXPORT vfxGetPipelineDoc(
+    void*                pDoc,
+    VfxPipelineStatePtr* pPipelineState)
+{
+    Vfx::vfxGetPipelineDoc(pDoc, pPipelineState);
+}
+
+void SH_IMPORT_EXPORT vfxPrintDoc(
+    void*                pDoc)
+{
+    Vfx::vfxPrintDoc(pDoc);
 }
 
 //

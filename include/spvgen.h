@@ -47,6 +47,8 @@
     #endif
 #endif
 
+#include "vfx.h"
+
 enum SpvGenVersion
 {
     SpvGenVersionGlslang,
@@ -55,18 +57,6 @@ enum SpvGenVersion
     SpvGenVersionExtAmd,
     SpvGenVersionCount,
 };
-
-enum VfxDocType
-{
-    VfxDocTypeRender,
-    VfxDocTypePipeline
-};
-
-struct VfxRenderState;
-struct  VfxPipelineState;
-
-typedef struct VfxRenderState* VfxRenderStatePtr;
-typedef struct VfxPipelineState* VfxPipelineStatePtr;
 
 // Command-line options
 enum TOptions {
@@ -116,7 +106,7 @@ void SH_IMPORT_EXPORT spvDestroyProgram(
 
 int SH_IMPORT_EXPORT spvGetSpirvBinaryFromProgram(
     void*                hProgram,
-    EShLanguage          stage,
+    int                  stage,
     const unsigned int** ppData);
 
 int SH_IMPORT_EXPORT spvAssembleSpirv(
@@ -181,6 +171,11 @@ void SH_IMPORT_EXPORT vfxPrintDoc(
 }
 #endif
 
+static inline bool InitSpvGen()
+{
+    return true;
+}
+
 #else
 
 typedef enum {
@@ -218,7 +213,7 @@ typedef void SH_IMPORT_EXPORT (SPVAPI* PFN_spvDestroyProgram)(void* hProgram);
 
 typedef int SH_IMPORT_EXPORT (SPVAPI* PFN_spvGetSpirvBinaryFromProgram)(
     void*                hProgram,
-    EShLanguage          stage,
+    int                  stage,
     const unsigned int** ppData);
 
 typedef int SH_IMPORT_EXPORT (SPVAPI* PFN_spvAssembleSpirv)(
@@ -301,6 +296,8 @@ DECL_EXPORT_FUNC(vfxGetRenderDoc);
 DECL_EXPORT_FUNC(vfxGetPipelineDoc);
 DECL_EXPORT_FUNC(vfxPrintDoc);
 
+bool InitSpvGen();
+
 #endif
 
 #ifdef SPVGEN_STATIC_LIB
@@ -350,7 +347,11 @@ static const char* SpvGeneratorName = "spvgen.dll";
 
 #include <dlfcn.h>
 #include <stdio.h>
+#if __APPLE__ && __MACH__
+static const char* SpvGeneratorName = "spvgen.dylib";
+#else
 static const char* SpvGeneratorName = "spvgen.so";
+#endif
 
 #define INITFUNC(func) \
   g_pfn##func = reinterpret_cast<PFN_##func>(dlsym(hModule, #func));\
@@ -364,10 +365,19 @@ static const char* SpvGeneratorName = "spvgen.so";
 
 #endif // _WIN32
 
+#define DEINITFUNC(func) g_pfn##func = nullptr;
+
 // =====================================================================================================================
 // Initialize SPIR-V generator entry-points
+// This can be called multiple times in the same application.
 bool InitSpvGen()
 {
+    if (g_pfnspvCompileAndLinkProgramFromFile != nullptr)
+    {
+        // Already loaded.
+        return true;
+    }
+
     bool success = true;
 #ifdef _WIN32
     HMODULE hModule = LoadLibrary(SpvGeneratorName);
@@ -396,10 +406,26 @@ bool InitSpvGen()
     }
     else
     {
-#ifndef _WIN32
-        fprintf(stderr, "Failed: %s\n", dlerror());
-#endif
         success = false;
+    }
+    if (success == false)
+    {
+        DEINITFUNC(spvCompileAndLinkProgramFromFile);
+        DEINITFUNC(spvCompileAndLinkProgram);
+        DEINITFUNC(spvCompileAndLinkProgramWithOptions);
+        DEINITFUNC(spvDestroyProgram);
+        DEINITFUNC(spvGetSpirvBinaryFromProgram);
+        DEINITFUNC(spvAssembleSpirv);
+        DEINITFUNC(spvDisassembleSpirv);
+        DEINITFUNC(spvValidateSpirv);
+        DEINITFUNC(spvOptimizeSpirv);
+        DEINITFUNC(spvFreeBuffer);
+        DEINITFUNC(spvGetVersion);
+        DEINITFUNC(vfxParseFile);
+        DEINITFUNC(vfxCloseDoc);
+        DEINITFUNC(vfxGetRenderDoc);
+        DEINITFUNC(vfxGetPipelineDoc);
+        DEINITFUNC(vfxPrintDoc);
     }
     return success;
 }
@@ -419,11 +445,43 @@ bool InitSpvGen()
 #define spvOptimizeSpirv                    g_pfnspvOptimizeSpirv
 #define spvFreeBuffer                       g_pfnspvFreeBuffer
 #define spvGetVersion                       g_pfnspvGetVersion
-#define vfxParseFile                        g_pfnvfxParseFile
-#define vfxCloseDoc                         g_pfnvfxCloseDoc
-#define vfxGetRenderDoc                     g_pfnvfxGetRenderDoc
-#define vfxGetPipelineDoc                   g_pfnvfxGetPipelineDoc
-#define vfxPrintDoc                         g_pfnvfxPrintDoc
+
+static inline bool vfxParseFile(
+    const char*  pFilename,
+    unsigned int numMacro,
+    const char*  pMacros[],
+    VfxDocType   type,
+    void**       ppDoc,
+    const char** ppErrorMsg)
+{
+    return (*g_pfnvfxParseFile)(pFilename, numMacro, pMacros, type, ppDoc, ppErrorMsg);
+}
+
+static inline void vfxCloseDoc(
+    void* pDoc)
+{
+    (*g_pfnvfxCloseDoc)(pDoc);
+}
+
+static inline void vfxGetRenderDoc(
+    void*              pDoc,
+    VfxRenderStatePtr* pRenderState)
+{
+    (*g_pfnvfxGetRenderDoc)(pDoc, pRenderState);
+}
+
+static inline void vfxGetPipelineDoc(
+    void*                pDoc,
+    VfxPipelineStatePtr* pPipelineState)
+{
+    (*g_pfnvfxGetPipelineDoc)(pDoc, pPipelineState);
+}
+
+static inline void vfxPrintDoc(
+    void*                pDoc)
+{
+    (*g_pfnvfxPrintDoc)(pDoc);
+}
 
 #endif
 
