@@ -37,6 +37,12 @@ set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to 
 
 set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
 
+add_definitions(-DVFX_INSIDE_SPVGEN=1)
+
+add_definitions(-DNV_EXTENSIONS)
+
+add_definitions(-DAMD_EXTENSIONS)
+
 add_subdirectory(external/glslang)
 
 add_subdirectory(external/SPIRV-tools)
@@ -52,16 +58,17 @@ include_directories(
 	external/SPIRV-tools/include
 	external/llpc/include
 	${XGL_LLPC_PATH}/include
+	${XGL_LLPC_PATH}/tool/vfx
 	${VULKAN_HEADER_PATH}
 )
 
 target_sources(spvgen PRIVATE
 	source/spvgen.cpp
-    source/vfxParser.cpp
-    source/vfxPipelineDoc.cpp
-    source/vfxRenderDoc.cpp
-    source/vfxSection.cpp
-    source/vfxEnumsConverter.cpp
+    ${XGL_LLPC_PATH}/tool/vfx/vfxParser.cpp
+    ${XGL_LLPC_PATH}/tool/vfx/vfxPipelineDoc.cpp
+    ${XGL_LLPC_PATH}/tool/vfx/vfxRenderDoc.cpp
+    ${XGL_LLPC_PATH}/tool/vfx/vfxSection.cpp
+    ${XGL_LLPC_PATH}/tool/vfx/vfxEnumsConverter.cpp
 )
 
 target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt)
