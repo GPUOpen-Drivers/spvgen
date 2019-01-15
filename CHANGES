@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: fa61e4c
-Date: 2018/10/17
-fa61e4c Merge pull request #1533 from amdrexu/bugfix
+Commit: 9ed3873
+Date: 2018/12/26
+9ed3873 Merge pull request #1627 from greg-lunarg/lines8
 
 [SPIRV-tools]
-Commit: 90a12b3
-Date: 2018/09/25
-90a12b3 Decoration validation for Vulkan memory model
+Commit: 167f127
+Date: 2018/12/26
+167f127 Output disassembly line number for binary parse errors. (#2195)
 
 [SPIRV-headers]
-Commit: d5b2e12
-Date: 2018/09/25
-d5b2e12 Fix D -> d typo in previous commit.
+Commit: 4618b86
+Date: 2018/12/26
+4618b86 Merge pull request #85 from akien-mga/unix-executable-bit

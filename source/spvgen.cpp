@@ -66,48 +66,16 @@ namespace spv {
 #include "spvgen.h"
 #include "vfx.h"
 
-#define MAX_PATH 256
-
-extern "C" {
-    SH_IMPORT_EXPORT void ShOutputHtml();
-}
-
-//
-// Return codes from main.
-//
-enum TFailCode {
-    ESuccess = 0,
-    EFailUsage,
-    EFailCompile,
-    EFailLink,
-    EFailCompilerCreate,
-    EFailThreadCreate,
-    EFailLinkerCreate
-};
-
-EShLanguage FindLanguage(const std::string& name);
-
-void FreeFileData(char** data);
-char** ReadFileData(const char* fileName);
-void InfoLogMsg(const char* msg, const char* name, const int num);
-
+// Forward declarations
+bool ReadFileData(const char* pFileName, std::string& data);
 int Vsnprintf(char* pOutput, size_t bufSize, const char* pFormat, va_list argList);
 int Snprintf(char* pOutput, size_t bufSize, const char* pFormat, ...);
 spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic, char* pBuffer, size_t bufferSize);
 
-// Globally track if any compile or link failure.
-bool CompileFailed = false;
-bool LinkFailed = false;
-
-// Use to test breaking up a single shader file into multiple strings.
-int NumShaderStrings;
-
 TBuiltInResource Resources;
-char ConfigFile[MAX_PATH];
-int defaultOptions = EOptionDefaultDesktop | EOptionVulkanRules;
+std::string ConfigFile;
+int DefaultOptions = SpvGenOptionDefaultDesktop | SpvGenOptionVulkanRules;
 
-// Set the version of the input semantics.
-int ClientInputSemanticsVersion = 100;
 //
 // These are the default resources for TBuiltInResources, used for both
 //  - parsing this string for the case where the user didn't supply one
@@ -209,30 +177,33 @@ const char* DefaultConfig =
     "generalConstantMatrixVectorIndexing 1\n"
     ;
 
-//
+// =====================================================================================================================
 // Parse either a .conf file provided by the user or the default string above.
-//
 void ProcessConfigFile()
 {
-    char** configStrings = 0;
-    char* config = 0;
+    const char* config = 0;
+    std::string configData;
 
-    if (strlen(ConfigFile) > 0) {
-        configStrings = ReadFileData(ConfigFile);
-        if (configStrings)
-            config = *configStrings;
-        else {
+    if (ConfigFile.size() > 0)
+    {
+        if (ReadFileData(ConfigFile.c_str(), configData))
+        {
+            config = configData.c_str();
+        }
+        else
+        {
             printf("Error opening configuration file; will instead use the default configuration\n");
         }
     }
 
-    if (config == 0) {
-        config = new char[strlen(DefaultConfig) + 1];
-        strcpy(config, DefaultConfig);
+    if (config == 0)
+    {
+        configData = DefaultConfig;
+        config = configData.c_str();
     }
 
     const char* delims = " \t\n\r";
-    const char* token = strtok(config, delims);
+    const char* token = strtok(const_cast<char*>(config), delims);
     while (token) {
         const char* valueStr = strtok(0, delims);
         if (valueStr == 0 || ! (valueStr[0] == '-' || (valueStr[0] >= '0' && valueStr[0] <= '9'))) {
@@ -431,79 +402,114 @@ void ProcessConfigFile()
 
         token = strtok(0, delims);
     }
-    if (configStrings)
-        FreeFileData(configStrings);
 }
 
-
-
-const char* ExecutableName;
-
-//
+// =====================================================================================================================
 // *.conf => this is a config file that can set limits/resources
-//
 bool SetConfigFile(const std::string& name)
 {
     if (name.size() < 5)
         return false;
 
     if (name.compare(name.size() - 5, 5, ".conf") == 0) {
-        size_t copyLength = (name.size() < sizeof(ConfigFile)) ? name.size() : (sizeof(ConfigFile) - 1);
-        strncpy(ConfigFile, name.c_str(), copyLength);
-        ConfigFile[copyLength + 1] = '\0';
-
+        ConfigFile = name;
         return true;
     }
 
     return false;
 }
 
-//
+// =====================================================================================================================
 // Translate the meaningful subset of command-line options to parser-behavior options.
-//
 void SetMessageOptions(EShMessages& messages, int options)
 {
     messages = (EShMessages)(messages | EShMsgSpvRules);
-    if (options & EOptionVulkanRules)
+    if (options & SpvGenOptionVulkanRules)
         messages = (EShMessages)(messages | EShMsgVulkanRules);
-    if (options & EOptionReadHlsl)
+    if (options & SpvGenOptionReadHlsl)
         messages = (EShMessages)(messages | EShMsgReadHlsl);
-    if (options & EOptionHlslOffsets)
+    if (options & SpvGenOptionHlslOffsets)
         messages = (EShMessages)(messages | EShMsgHlslOffsets);
-    if (options & EOptionDebug)
+    if (options & SpvGenOptionDebug)
         messages = (EShMessages)(messages | EShMsgDebugInfo);
-    if (options & EOptionOptimizeDisable)
+    if (options & SpvGenOptionOptimizeDisable)
         messages = (EShMessages)(messages | EShMsgHlslLegalization);
 }
 
-class OGLProgram : public glslang::TProgram
+// =====================================================================================================================
+// Represents the result of spvCompileAndLinkProgram*
+class SpvProgram
 {
 public:
-    ~OGLProgram()
+    // Constructor
+    SpvProgram(uint32_t stageCount)
+        :
+        spirvs(stageCount)
     {
-        for(int i = 0; i< VkStageCount; ++i)
-        {
-            std::list<glslang::TShader*>::iterator it;
-            for(it = stages[i].begin(); it != stages[i].end(); ++it)
-            {
-                delete *it;
-            }
-            stages[i].clear();
-        }
+        programs.push_back(new glslang::TProgram);
     }
-    void AddLog(const char* log) {
+
+    // Destructor
+    ~SpvProgram()
+    {
+        for (uint32_t i = 0; i < programs.size(); ++i)
+        {
+            delete programs[i];
+        }
+        programs.clear();
+    }
+
+    // Add shader to current program
+    void addShader(glslang::TShader* shader)
+    {
+        GetCurrentProgram()->addShader(shader);
+    }
+
+    // Link shader for current program
+    bool link(EShMessages message)
+    {
+        return GetCurrentProgram()->link(message);
+    }
+
+    // Get link log from current program
+    const char* getInfoLog()
+    {
+        return GetCurrentProgram()->getInfoLog();
+    }
+
+    // Get link debug log from current program
+    const char* getInfoDebugLog()
+    {
+        return GetCurrentProgram()->getInfoLog();
+    }
+
+    // Get intermediate tree from current program with specified shader stage
+    glslang::TIntermediate* getIntermediate(
+        EShLanguage stage
+        ) const
+    {
+        return GetCurrentProgram()->getIntermediate(stage);
+    }
+
+    // Add log to SPV program log
+    void AddLog(
+        const char* log)
+    {
         programLog += log;
     };
 
-    void FormatLinkInfo(const char* linkInfo, std::string& formatedString)
+    // Format link info
+    void FormatLinkInfo(
+        const char*  linkInfo,
+        std::string& formatedString)
     {
         char buffer[256];
-        char* infoEntry[VkStageCount] = {};
+        char* infoEntry[EShLangCount] = {};
         int length = (int)strlen(linkInfo);
         char* pInfoCopy = new char [length + 1];
         char* pLog = pInfoCopy;
         strcpy(pLog, linkInfo);
-        for (int i = 0; i < VkStageCount; ++i)
+        for (int i = 0; i < EShLangCount; ++i)
         {
             sprintf(buffer, "\nLinked %s stage:\n\n", glslang::StageName((EShLanguage)i));
             infoEntry[i] = strstr(pLog, buffer);
@@ -515,7 +521,7 @@ public:
             }
         }
 
-        for (int i = 0; i < VkStageCount; ++i)
+        for (int i = 0; i < EShLangCount; ++i)
         {
             if ((infoEntry[i] != nullptr) && (strlen(infoEntry[i]) > 0))
             {
@@ -524,227 +530,318 @@ public:
                 formatedString += infoEntry[i];
             }
         }
+        delete[] pInfoCopy;
     }
-    std::string               programLog;
-    std::vector<unsigned int> spirv[VkStageCount];
+
+    // Get current program
+    glslang::TProgram* GetCurrentProgram()
+    {
+        return programs.back();
+    }
+
+    const glslang::TProgram* GetCurrentProgram() const
+    {
+        return programs.back();
+    }
+
+    // Append a new program
+    void AddProgram()
+    {
+        programs.push_back(new glslang::TProgram);
+    }
+
+    std::string                             programLog;
+    std::vector<glslang::TProgram*>         programs;
+    std::vector<std::vector<unsigned int> > spirvs;
 };
 
-//
-// Compile and link GLSL source from file list, and the result is stored in pProgram
-//
-// NOTE: Uses the new C++ interface instead of the old handle-based interface.
-// and user must call spvDestroyProgram explictly to destroy program object
-//
+// =====================================================================================================================
+// Compile and link GLSL source from file list
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFile(
     int          fileNum,
     const char*  fileList[],
-    void**       pProgram,
+    void**       ppProgram,
     const char** ppLog)
 {
-    // keep track of what to free
-    std::list<glslang::TShader*> shaders;
+    return spvCompileAndLinkProgramFromFileEx(fileNum,
+                                              fileList,
+                                              nullptr,
+                                              ppProgram,
+                                              ppLog,
+                                              DefaultOptions);
+}
 
-    EShMessages messages = EShMsgDefault;
-    SetMessageOptions(messages, defaultOptions);
-
-    //
-    // Per-shader processing...
-    //
-
-    OGLProgram& program = *new OGLProgram;
-    *pProgram = &program;
+// =====================================================================================================================
+// Compile and link GLSL source from file list with full parameters
+bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFileEx(
+    int             fileNum,
+    const char*     fileList[],
+    const char*     entryPoints[],
+    void**          ppProgram,
+    const char**    ppLog,
+    int             options)
+{
+    std::vector<std::string> sources(fileNum);
+    std::vector<SpvGenStage> stageTypes(fileNum);
+    std::vector<int>         sourceCount(fileNum);
+    std::vector<const char*> sourcesPtr(fileNum);
+    std::vector<const char*const*> sourceListPtr(fileNum);
+    bool isHlsl = false;
 
     for (int i = 0; i < fileNum; ++i)
     {
-        EShLanguage stage = FindLanguage(fileList[i]);
-        glslang::TShader* shader = new glslang::TShader(stage);
-
-        char** shaderStrings = ReadFileData(fileList[i]);
-        if (! shaderStrings) {
+        stageTypes[i] = spvGetStageTypeFromName(fileList[i], &isHlsl);
+        if (ReadFileData(fileList[i], sources[i]))
+        {
             return false;
         }
-
-        shader->setStrings(shaderStrings, 1);
-
-        if (! shader->parse(&Resources, (defaultOptions & EOptionDefaultDesktop) ? 110 : 100, false, messages))
-            CompileFailed = true;
-
-        program.addShader(shader);
-
-        FreeFileData(shaderStrings);
+        sourceCount[i] = 1;
     }
 
-    //
-    // Program-level processing...
-    //
-
-    if (! program.link(messages))
-        LinkFailed = true;
-
-    if (CompileFailed || LinkFailed)
+    for (int i = 0; i < fileNum; ++i)
     {
-        *ppLog = program.programLog.c_str();
-        return false;
+        sourcesPtr[i] = sources[i].c_str();
+        sourceListPtr[i] = &sourcesPtr[i];
     }
 
-    for (int stage = 0; stage < VkStageCount; ++stage) {
-        if (program.getIntermediate((EShLanguage)stage)) {
-            glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage]);
-        }
+    if (isHlsl)
+    {
+        options |= SpvGenOptionReadHlsl;
     }
-    *ppLog = program.programLog.c_str();
-    return true;
+    return spvCompileAndLinkProgramEx(fileNum,
+                                      &stageTypes[0],
+                                      &sourceCount[0],
+                                      &sourceListPtr[0],
+                                      entryPoints,
+                                      ppProgram,
+                                      ppLog,
+                                      options);
 }
 
-//
+// =====================================================================================================================
 // Compile and link GLSL source strings, and the result is stored in pProgram
-//
-// NOTE: Uses the new C++ interface instead of the old handle-based interface.
-// and user must call spvDestroyProgram explictly to destroy program object
-//
 bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
-    int                  shaderStageSourceCounts[VkStageCount],
-    const char* const *  shaderStageSources[VkStageCount],
-    void**               pProgram,
+    int                  shaderStageSourceCounts[SpvGenNativeStageCount],
+    const char* const *  shaderStageSources[SpvGenNativeStageCount],
+    void**               ppProgram,
     const char**         ppLog)
 {
-    return spvCompileAndLinkProgramWithOptions(shaderStageSourceCounts,
-                                               shaderStageSources,
-                                               pProgram,
-                                               ppLog,
-                                               defaultOptions);
+    static const SpvGenStage stageTypes[SpvGenNativeStageCount] =
+    {
+        SpvGenStageVertex,
+        SpvGenStageTessControl,
+        SpvGenStageTessEvaluation,
+        SpvGenStageGeometry,
+        SpvGenStageFragment,
+        SpvGenStageCompute,
+    };
+    return spvCompileAndLinkProgramEx(SpvGenNativeStageCount,
+                                     stageTypes,
+                                     shaderStageSourceCounts,
+                                     shaderStageSources,
+                                     nullptr,
+                                     ppProgram,
+                                     ppLog,
+                                     DefaultOptions);
 }
 
-//
-// Compile and link GLSL source strings with options
-//
-// NOTE: Uses the new C++ interface instead of the old handle-based interface.
-// and user must call spvDestroyProgram explictly to destroy program object
-//
-bool SH_IMPORT_EXPORT spvCompileAndLinkProgramWithOptions(
-    int                  shaderStageSourceCounts[VkStageCount],
-    const char* const *  shaderStageSources[VkStageCount],
-    void**               pProgram,
+// =====================================================================================================================
+// Compile and link GLSL source strings with full parameters
+bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
+    int                  stageCount,
+    const SpvGenStage*   stageTypeList,
+    const int*           shaderStageSourceCounts,
+    const char* const *  shaderStageSources[],
+    const char*          entryPoints[],
+    void**               ppProgram,
     const char**         ppLog,
     int                  options)
 {
-    // keep track of what to free
-    std::list<glslang::TShader*> shaders;
+    // Set the version of the input semantics.
+    const int ClientInputSemanticsVersion = 100;
 
     EShMessages messages = EShMsgDefault;
     SetMessageOptions(messages, options);
 
-    //
-    // Per-shader processing...
-    //
+    bool compileFailed = false;
+    bool linkFailed = false;
 
-    OGLProgram& program = *new OGLProgram;
-    *pProgram = &program;
+    SpvProgram* pProgram = new SpvProgram(stageCount);
+    *ppProgram = pProgram;
 
-    for (int i = 0; i < VkStageCount; ++i)
+    uint32_t stageMask = 0;
+    std::vector<glslang::TShader*> shaders(stageCount);
+    for (int i = 0, linkIndexBase = 0; i < stageCount; ++i)
     {
         if (shaderStageSourceCounts[i] > 0)
         {
             assert(shaderStageSources[i] != nullptr);
-            glslang::TShader* shader = new glslang::TShader(static_cast<EShLanguage>(i));
+            assert(stageTypeList[i] < SpvGenStageCount);
+            EShLanguage stage = static_cast<EShLanguage>(stageTypeList[i]);
 
-            shader->setStrings(shaderStageSources[i], shaderStageSourceCounts[i]);
+            // Per-shader processing...
+            glslang::TShader* pShader = new glslang::TShader(stage);
+            shaders[i] = pShader;
 
-            if (options & EOptionVulkanRules) {
-                shader->setEnvInput((options & EOptionReadHlsl) ? glslang::EShSourceHlsl
-                    : glslang::EShSourceGlsl,
-                    (EShLanguage)i, glslang::EShClientVulkan, ClientInputSemanticsVersion);
-                shader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
+            pShader->setStrings(shaderStageSources[i], shaderStageSourceCounts[i]);
+
+            if (options & SpvGenOptionVulkanRules)
+            {
+                pShader->setEnvInput((options & SpvGenOptionReadHlsl) ? glslang::EShSourceHlsl : glslang::EShSourceGlsl,
+                                    stage,
+                                    glslang::EShClientVulkan,
+                                    ClientInputSemanticsVersion);
+                pShader->setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_1);
             }
-            else {
-                shader->setEnvInput((options & EOptionReadHlsl) ? glslang::EShSourceHlsl
-                    : glslang::EShSourceGlsl,
-                    (EShLanguage)i, glslang::EShClientOpenGL, ClientInputSemanticsVersion);
-                shader->setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
+            else
+            {
+                assert((options & SpvGenOptionReadHlsl) == 0); // Assume OGL don't use HLSL
+                pShader->setEnvInput((options & SpvGenOptionReadHlsl) ? glslang::EShSourceHlsl : glslang::EShSourceGlsl,
+                                    stage,
+                                    glslang::EShClientOpenGL,
+                                    ClientInputSemanticsVersion);
+                pShader->setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
             }
-            shader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+            pShader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
 
-            if ((options & EOptionFlattenUniformArrays) != 0 &&
-                (options & EOptionReadHlsl) == 0) {
-                printf("uniform array flattening only valid when compiling HLSL source.");
+            if (entryPoints && entryPoints[i])
+            {
+                pShader->setEntryPoint(entryPoints[i]);
+            }
+
+            if ((options & SpvGenOptionFlattenUniformArrays) != 0 &&
+                (options & SpvGenOptionReadHlsl) == 0)
+            {
+                pProgram->AddLog("uniform array flattening only valid when compiling HLSL source.");
                 return false;
             }
-            shader->setFlattenUniformArrays((options & EOptionFlattenUniformArrays) != 0);
 
-            if (options & EOptionHlslIoMapping)
-                shader->setHlslIoMapping(true);
+            pShader->setFlattenUniformArrays((options & SpvGenOptionFlattenUniformArrays) != 0);
 
-            if (options & EOptionAutoMapBindings)
-                shader->setAutoMapBindings(true);
-
-            if (options & EOptionAutoMapLocations)
-                shader->setAutoMapLocations(true);
-
-            if (options & EOptionInvertY)
-                shader->setInvertY(true);
-
-            if (!shader->parse(&Resources, (options & EOptionDefaultDesktop) ? 110 : 100, false, messages))
-                CompileFailed = true;
-
-            program.addShader(shader);
-
-            const char* pInfoLog = shader->getInfoLog();
-            const char* pDebugLog = shader->getInfoDebugLog();
-            if ((strlen(pInfoLog) > 0) || (strlen(pDebugLog) > 0))
+            if (options & SpvGenOptionHlslIoMapping)
             {
-                char buffer[256];
-                sprintf(buffer, "Compiling %s stage:\n", glslang::StageName((EShLanguage)i));
-                program.AddLog(buffer);
-                program.AddLog(shader->getInfoLog());
-                program.AddLog(shader->getInfoDebugLog());
+                pShader->setHlslIoMapping(true);
+            }
+
+            if (options & SpvGenOptionAutoMapBindings)
+            {
+                pShader->setAutoMapBindings(true);
+            }
+
+            if (options & SpvGenOptionAutoMapLocations)
+            {
+                pShader->setAutoMapLocations(true);
+            }
+
+            if (options & SpvGenOptionInvertY)
+            {
+                pShader->setInvertY(true);
+            }
+
+            compileFailed = !pShader->parse(&Resources,
+                (options & SpvGenOptionDefaultDesktop) ? 110 : 100,
+                false,
+                messages);
+
+            if (compileFailed == false)
+            {
+                pProgram->addShader(pShader);
+            }
+
+            if ((options & SpvGenOptionSuppressInfolog) == false)
+            {
+                const char* pInfoLog = pShader->getInfoLog();
+                const char* pDebugLog = pShader->getInfoDebugLog();
+                if ((strlen(pInfoLog) > 0) || (strlen(pDebugLog) > 0))
+                {
+                    char buffer[256];
+                    sprintf(buffer, "Compiling %s stage:\n", glslang::StageName((EShLanguage)i));
+                    pProgram->AddLog(buffer);
+                    pProgram->AddLog(pShader->getInfoLog());
+                    pProgram->AddLog(pShader->getInfoDebugLog());
+                }
+            }
+        }
+
+        bool doLink = false;
+        if (compileFailed == false)
+        {
+            if (i == stageCount - 1)
+            {
+                doLink = true;
+            }
+            else if (shaderStageSourceCounts[i + 1] > 0)
+            {
+                EShLanguage nextStage = static_cast<EShLanguage>(stageTypeList[i + 1]);
+                if (stageMask & (1 << nextStage))
+                {
+                    doLink = true;
+                }
+            }
+
+            if (doLink)
+            {
+                // Program-level processing...
+                linkFailed = !pProgram->link(messages);
+
+                if ((options & SpvGenOptionSuppressInfolog) == false)
+                {
+                    const char* pInfoLog = pProgram->getInfoLog();
+                    const char* pDebugLog = pProgram->getInfoDebugLog();
+                    std::string formatLog;
+                    pProgram->FormatLinkInfo(pInfoLog, formatLog);
+                    if (formatLog.size() > 0 || strlen(pDebugLog) > 0)
+                    {
+                        pProgram->AddLog(formatLog.c_str());
+                        pProgram->AddLog(pDebugLog);
+                    }
+                }
+
+                if (linkFailed)
+                {
+                    *ppLog = pProgram->programLog.c_str();
+                    return false;
+                }
+
+                for (int linkIndex = linkIndexBase; linkIndex <= i; ++linkIndex)
+                {
+                    if (shaders[linkIndex] != nullptr)
+                    {
+                        EShLanguage linkStage = shaders[linkIndex]->getStage();
+                        auto pIntermediate = pProgram->getIntermediate(linkStage);
+                        glslang::SpvOptions spvOptions = {};
+                        spvOptions.generateDebugInfo = (options & SpvGenOptionDebug) != 0;
+                        spvOptions.disableOptimizer = (options & SpvGenOptionOptimizeDisable) != 0;
+                        spvOptions.optimizeSize = (options & SpvGenOptionOptimizeSize) != 0;
+                        glslang::GlslangToSpv(*pIntermediate, pProgram->spirvs[linkIndex], &spvOptions);
+                    }
+                }
+                linkIndexBase = i + 1;
+                pProgram->AddProgram();
             }
         }
     }
 
-    if (CompileFailed)
+    for (size_t i = 0; i < shaders.size(); ++i)
     {
-        *ppLog = program.programLog.c_str();
-        return false;
+        delete shaders[i];
     }
+    shaders.clear();
 
-    //
-    // Program-level processing...
-    //
-
-    if (!program.link(messages))
-        LinkFailed = true;
-
-    if (LinkFailed)
-    {
-        *ppLog = program.programLog.c_str();
-        return false;
-    }
-
-    for (int stage = 0; stage < VkStageCount; ++stage) {
-        if (program.getIntermediate((EShLanguage)stage)) {
-            glslang::SpvOptions spvOptions;
-            spvOptions.generateDebugInfo = (options & EOptionDebug) != 0;
-            spvOptions.disableOptimizer = (options & EOptionOptimizeDisable) != 0;
-            spvOptions.optimizeSize = (options & EOptionOptimizeSize) != 0;
-            glslang::GlslangToSpv(*program.getIntermediate((EShLanguage)stage), program.spirv[stage], &spvOptions);
-        }
-    }
-
-    *ppLog = program.programLog.c_str();
-    return true;
+    *ppLog = pProgram->programLog.c_str();
+    return (compileFailed || linkFailed) ? false : true;
 }
 
-//
-// Destroies OGLProgram object
-//
+// =====================================================================================================================
+// Destroies SpvProgram object
 void SH_IMPORT_EXPORT spvDestroyProgram(
     void* hProgram)
 {
-    OGLProgram* pProgram = reinterpret_cast<OGLProgram*>(hProgram);
+    SpvProgram* pProgram = reinterpret_cast<SpvProgram*>(hProgram);
     delete pProgram;
 }
 
-//
+// =====================================================================================================================
 // Get SPRIV binary from OGLProgram object with specified shader stage, and return the binary size in bytes
 //
 // NOTE: 0 is returned if SPIRVI binary isn't exist for specified shader stage
@@ -753,11 +850,11 @@ int SH_IMPORT_EXPORT spvGetSpirvBinaryFromProgram(
     int                  stage,
     const unsigned int** ppData)
 {
-    OGLProgram* pProgram = reinterpret_cast<OGLProgram*>(hProgram);
-    int programSize = (int)(pProgram->spirv[stage].size() * sizeof(unsigned int));
+    SpvProgram* pProgram = reinterpret_cast<SpvProgram*>(hProgram);
+    int programSize = (int)(pProgram->spirvs[stage].size() * sizeof(unsigned int));
     if (programSize > 0)
     {
-        *ppData = &pProgram->spirv[stage][0];
+        *ppData = &pProgram->spirvs[stage][0];
     }
     else
     {
@@ -766,9 +863,72 @@ int SH_IMPORT_EXPORT spvGetSpirvBinaryFromProgram(
     return programSize;
 }
 
-//
+// =====================================================================================================================
+// Deduce the language from the filename.  Files must end in one of the following extensions:
+SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
+    const char* pName,
+    bool*       pIsHlsl)
+{
+    std::string name = pName;
+    size_t ext = name.rfind('.');
+    if (ext == std::string::npos)
+    {
+        return SpvGenStageInvalid;
+    }
+
+    std::string suffix = name.substr(ext + 1, std::string::npos);
+    if (suffix == "glsl" || suffix == "hlsl")
+    {
+        if (suffix == "hlsl")
+        {
+            *pIsHlsl = true;
+        }
+
+        // for .vert.glsl, .tesc.glsl, ..., .comp.glsl/.hlsl compound suffixes
+        name = name.substr(0, ext);
+        ext = name.rfind('.');
+        if (ext == std::string::npos) {
+            return SpvGenStageInvalid;
+        }
+        suffix = name.substr(ext + 1, std::string::npos);
+    }
+
+    if (suffix == "vert")
+        return SpvGenStageVertex;
+    else if (suffix == "tesc")
+        return SpvGenStageTessControl;
+    else if (suffix == "tese")
+        return SpvGenStageTessEvaluation;
+    else if (suffix == "geom")
+        return SpvGenStageGeometry;
+    else if (suffix == "frag")
+        return SpvGenStageFragment;
+    else if (suffix == "comp")
+        return SpvGenStageCompute;
+#if VKI_RAY_TRACING
+    else if (suffix == "rgen")
+        return SpvGenStageRayTracingRayGen;
+    else if (suffix == "rint")
+        return SpvGenStageRayTracingIntersect;
+    else if (suffix == "rahit")
+        return SpvGenStageRayTracingAnyHit;
+    else if (suffix == "rchit")
+        return SpvGenStageRayTracingClosestHit;
+    else if (suffix == "rmiss")
+        return SpvGenStageRayTracingMiss;
+    else if (suffix == "rcall")
+        return SpvGenStageRayTracingCallable;
+    else if (suffix == "task")
+        return SpvGenStageTask;
+    else if (suffix == "mesh")
+        return SpvGenStageMesh;
+#endif
+
+    return SpvGenStageInvalid;
+}
+
+// =====================================================================================================================
 // Gets component version according to specified SpvGenVersion enum
-//
 bool SH_IMPORT_EXPORT spvGetVersion(
     SpvGenVersion version,
     unsigned int* pVersion,
@@ -801,16 +961,29 @@ bool SH_IMPORT_EXPORT spvGetVersion(
             *pReversion = spv::GLSLextAMDRevision;
             break;
         }
+    case SpvGenVersionSpvGen:
+        {
+            *pVersion = SPVGEN_VERSION;
+            *pReversion = SPVGEN_REVISION;
+            break;
+        }
+    case SpvGenVersionVfx:
+        {
+            *pVersion = VFX_VERSION;
+            *pReversion = VFX_REVISION;
+            break;
+        }
     default:
         {
             result = false;
             break;
         }
     }
+
     return result;
 }
 
-//
+// =====================================================================================================================
 // Assemble SPIR-V text, store the result in pBuffer and return SPIRV code size in byte
 //
 // NOTE: If assemble success, *ppLog is nullptr, otherwise, *ppLog is the error message and -1 is returned.
@@ -850,7 +1023,7 @@ int SH_IMPORT_EXPORT spvAssembleSpirv(
     return retval;
 }
 
-//
+// =====================================================================================================================
 // Disassemble SPIR-V binary token using khronos spirv-tools, and store the output text to pBuffer
 //
 // NOTE: The text will be clampped if buffer size is less than requirement.
@@ -893,7 +1066,7 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
     return success;
 }
 
-//
+// =====================================================================================================================
 // Validate SPIR-V binary token using khronos spirv-tools, and store the log text to pLog
 //
 // NOTE: The text will be clampped if buffer size is less than requirement.
@@ -923,13 +1096,12 @@ bool SH_IMPORT_EXPORT spvValidateSpirv(
     return success;
 }
 
-//
+// =====================================================================================================================
 // Optimize SPIR-V binary token using khronos spirv-tools, and store optimized result to ppOptBuf and the log text
 // to pLog
 //
 // NOTE: The text will be clampped if buffer size is less than requirement, and ppOptBuf should be freed by
 // spvFreeBuffer
-//
 bool SH_IMPORT_EXPORT spvOptimizeSpirv(
     unsigned int   size,
     const void*    pSpvToken,
@@ -998,7 +1170,7 @@ bool SH_IMPORT_EXPORT spvOptimizeSpirv(
 
     if (ret)
     {
-        *pBufSize = binary.size() * sizeof(uint32_t);
+        *pBufSize = static_cast<uint32_t>(binary.size() * sizeof(uint32_t));
         *ppOptBuf = malloc(*pBufSize);
         memcpy(*ppOptBuf, binary.data(), *pBufSize);
     }
@@ -1018,18 +1190,16 @@ bool SH_IMPORT_EXPORT spvOptimizeSpirv(
     return ret;
 }
 
-//
+// =====================================================================================================================
 // Free input buffer
-//
 void SH_IMPORT_EXPORT spvFreeBuffer(
     void* pBuffer)
 {
     free(pBuffer);
 }
 
-//
+// =====================================================================================================================
 // Export stubs for VFX functions.
-//
 bool SH_IMPORT_EXPORT vfxParseFile(
     const char*  pFilename,
     unsigned int numMacro,
@@ -1041,12 +1211,14 @@ bool SH_IMPORT_EXPORT vfxParseFile(
     return Vfx::vfxParseFile(pFilename, numMacro, pMacros, type, ppDoc, ppErrorMsg);
 }
 
+// =====================================================================================================================
 void SH_IMPORT_EXPORT vfxCloseDoc(
     void* pDoc)
 {
     Vfx::vfxCloseDoc(pDoc);
 }
 
+// =====================================================================================================================
 void SH_IMPORT_EXPORT vfxGetRenderDoc(
     void*              pDoc,
     VfxRenderStatePtr* pRenderState)
@@ -1054,6 +1226,7 @@ void SH_IMPORT_EXPORT vfxGetRenderDoc(
     Vfx::vfxGetRenderDoc(pDoc, pRenderState);
 }
 
+// =====================================================================================================================
 void SH_IMPORT_EXPORT vfxGetPipelineDoc(
     void*                pDoc,
     VfxPipelineStatePtr* pPipelineState)
@@ -1061,46 +1234,13 @@ void SH_IMPORT_EXPORT vfxGetPipelineDoc(
     Vfx::vfxGetPipelineDoc(pDoc, pPipelineState);
 }
 
+// =====================================================================================================================
 void SH_IMPORT_EXPORT vfxPrintDoc(
     void*                pDoc)
 {
     Vfx::vfxPrintDoc(pDoc);
 }
 
-//
-//   Deduce the language from the filename.  Files must end in one of the
-//   following extensions:
-//
-//   .vert = vertex
-//   .tesc = tessellation control
-//   .tese = tessellation evaluation
-//   .geom = geometry
-//   .frag = fragment
-//   .comp = compute
-//
-EShLanguage FindLanguage(const std::string& name)
-{
-    size_t ext = name.rfind('.');
-    if (ext == std::string::npos) {
-        return EShLangVertex;
-    }
-
-    std::string suffix = name.substr(ext + 1, std::string::npos);
-    if (suffix == "vert")
-        return EShLangVertex;
-    else if (suffix == "tesc")
-        return EShLangTessControl;
-    else if (suffix == "tese")
-        return EShLangTessEvaluation;
-    else if (suffix == "geom")
-        return EShLangGeometry;
-    else if (suffix == "frag")
-        return EShLangFragment;
-    else if (suffix == "comp")
-        return EShLangCompute;
-
-    return EShLangVertex;
-}
 
 #if !defined _MSC_VER && !defined MINGW_HAS_SECURE_API
 
@@ -1131,77 +1271,30 @@ int fopen_s(
 
 #endif
 
-//
-//   Malloc a string of sufficient size and read a string into it.
-//
-char** ReadFileData(const char* fileName)
+// =====================================================================================================================
+// Malloc a string of sufficient size and read a string into it.
+bool ReadFileData(
+    const char* pFileName,
+    std::string& data)
 {
-    FILE *in;
-    int errorCode = fopen_s(&in, fileName, "r");
-
-    char *fdata;
-    int count = 0;
-    const int maxSourceStrings = 5;
-    char** return_data = (char**)malloc(sizeof(char *) * (maxSourceStrings+1));
-
-    if (errorCode) {
-        printf("Error: unable to open input file: %s\n", fileName);
-        return 0;
+    FILE* pInFile = fopen(pFileName, "r");
+    if (pInFile == nullptr)
+    {
+        return false;
     }
 
-    while (fgetc(in) != EOF)
-        count++;
+    fseek(pInFile, 0, SEEK_END);
+    size_t textSize = ftell(pInFile);
+    fseek(pInFile, 0, SEEK_SET);
 
-    fseek(in, 0, SEEK_SET);
-
-    if (!(fdata = (char*)malloc(count+2))) {
-        printf("Error allocating memory\n");
-        return 0;
-    }
-    if (fread(fdata,1,count, in) != (size_t)count) {
-            printf("Error reading input file: %s\n", fileName);
-            return 0;
-    }
-    fdata[count] = '\0';
-    fclose(in);
-    if (count == 0) {
-        return_data[0]=(char*)malloc(count+2);
-        return_data[0][0]='\0';
-        NumShaderStrings = 0;
-        return return_data;
-    } else
-        NumShaderStrings = 1;
-
-    int len = (int)(ceil)((float)count/(float)NumShaderStrings);
-    int ptr_len=0,i=0;
-    while(count>0){
-        return_data[i]=(char*)malloc(len+2);
-        memcpy(return_data[i],fdata+ptr_len,len);
-        return_data[i][len]='\0';
-        count-=(len);
-        ptr_len+=(len);
-        if(count<len){
-            if(count==0){
-               NumShaderStrings=(i+1);
-               break;
-            }
-           len = count;
-        }
-        ++i;
-    }
-    return return_data;
-}
-
-void FreeFileData(char** data)
-{
-    for(int i=0;i<NumShaderStrings;i++)
-        free(data[i]);
-}
-
-void InfoLogMsg(const char* msg, const char* name, const int num)
-{
-    printf(num >= 0 ? "#### %s %s %d INFO LOG ####\n" :
-           "#### %s %s INFO LOG ####\n", msg, name, num);
+    char* pTempBuf = new char[textSize + 1];
+    assert(pTempBuf != nullptr);
+    memset(pTempBuf, 0, textSize + 1);
+    auto readSize = fread(pTempBuf, 1, textSize, pInFile);
+    pTempBuf[readSize] = 0;
+    data = pTempBuf;
+    delete[] pTempBuf;
+    return true;
 }
 
 // =====================================================================================================================
@@ -1258,9 +1351,8 @@ int Snprintf(
     return ret;
 }
 
-//
+// =====================================================================================================================
 //  Print error message of spvTextToBinary() and spvBinaryToText()
-//
 spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic, char* pBuffer, size_t bufferSize)
 {
   if (!diagnostic) return SPV_ERROR_INVALID_DIAGNOSTIC;
@@ -1278,6 +1370,7 @@ spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic, char* pBuffer, 
   }
 }
 
+// =====================================================================================================================
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <windows.h>
@@ -1286,8 +1379,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
                        LPVOID lpReserved
                        )
 {
-    memset(ConfigFile, 0, sizeof(ConfigFile));
-
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
@@ -1308,7 +1399,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 #else // Linux
 __attribute__((constructor)) static void Init()
 {
-    memset(ConfigFile, 0, sizeof(ConfigFile));
     ProcessConfigFile();
     glslang::InitializeProcess();
     spv::Parameterize();
