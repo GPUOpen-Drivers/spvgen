@@ -1033,7 +1033,7 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
     unsigned int   bufSize,
     char*          pBuffer)
 {
-    uint32_t options = SPV_BINARY_TO_TEXT_OPTION_INDENT;
+    uint32_t options = SPV_BINARY_TO_TEXT_OPTION_INDENT | SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES;
     // If printing to standard output, then spvBinaryToText should
     // do the printing.  In particular, colour printing on Windows is
     // controlled by modifying console objects synchronously while
