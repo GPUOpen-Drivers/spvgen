@@ -73,7 +73,7 @@ int Snprintf(char* pOutput, size_t bufSize, const char* pFormat, ...);
 spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic, char* pBuffer, size_t bufferSize);
 
 TBuiltInResource Resources;
-std::string ConfigFile;
+std::string* pConfigFile;
 int DefaultOptions = SpvGenOptionDefaultDesktop | SpvGenOptionVulkanRules;
 
 //
@@ -184,9 +184,14 @@ void ProcessConfigFile()
     const char* config = 0;
     std::string configData;
 
-    if (ConfigFile.size() > 0)
+    if (pConfigFile == nullptr)
     {
-        if (ReadFileData(ConfigFile.c_str(), configData))
+        pConfigFile = new(std::string);
+    }
+
+    if (pConfigFile->size() > 0)
+    {
+        if (ReadFileData(pConfigFile->c_str(), configData))
         {
             config = configData.c_str();
         }
@@ -412,7 +417,7 @@ bool SetConfigFile(const std::string& name)
         return false;
 
     if (name.compare(name.size() - 5, 5, ".conf") == 0) {
-        ConfigFile = name;
+        *pConfigFile = name;
         return true;
     }
 
@@ -1406,6 +1411,11 @@ __attribute__((constructor)) static void Init()
 
 __attribute__((destructor)) static void Destroy()
 {
+    if (pConfigFile != nullptr)
+    {
+        delete pConfigFile;
+    }
+
     glslang::FinalizeProcess();
 }
 
