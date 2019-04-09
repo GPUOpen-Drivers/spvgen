@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 9ed3873
-Date: 2018/12/26
-9ed3873 Merge pull request #1627 from greg-lunarg/lines8
+Commit: 5efb004
+Date: 2019/03/22
+5efb004 Merge pull request #1711 from demett-brcm/avoid-undefined-behaviour
 
 [SPIRV-tools]
-Commit: 167f127
-Date: 2018/12/26
-167f127 Output disassembly line number for binary parse errors. (#2195)
+Commit: 2d52cbe
+Date: 2019/03/22
+2d52cbe Add some val options to reduce (#2401)
 
 [SPIRV-headers]
-Commit: 4618b86
-Date: 2018/12/26
-4618b86 Merge pull request #85 from akien-mga/unix-executable-bit
+Commit: 111a25e
+Date: 2019/03/22
+111a25e Merge pull request #99 from Naghasan/contact-update
