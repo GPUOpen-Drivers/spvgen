@@ -37,15 +37,23 @@ set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to 
 
 set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
 
+set(SPVGEN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
+
 add_definitions(-DVFX_INSIDE_SPVGEN=1)
 
 add_definitions(-DNV_EXTENSIONS)
 
 add_definitions(-DAMD_EXTENSIONS)
 
-add_subdirectory(external/glslang)
-
-add_subdirectory(external/SPIRV-tools)
+# These two directories only exist after the user does "cd external && python fetch_external_sources.py".
+# You cannot build spvgen without them, but we do not want the cmake stage to fail when they are not
+# present, as spvgen is not built as part of the "all" target.
+if(EXISTS ${PROJECT_SOURCE_DIR}/external/glslang/CMakeLists.txt)
+    add_subdirectory(external/glslang)
+endif()
+if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-tools/CMakeLists.txt)
+    add_subdirectory(external/SPIRV-tools)
+endif()
 
 add_library(spvgen SHARED "")
 
