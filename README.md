@@ -34,20 +34,13 @@ The APIs are listed in include/spvgen.h and vfx.h.
 
 ## How to build
 
-```
-cd external/
-python fetch_external_sources.py
-cd ..
-cmake -H. -Brbuild64 -DCMAKE_BUILD_TYPE=release -DXGL_LLPC_PATH=<PATH_TO_LLPC> 
-cd rbuild64
-make
-cd ..
-cmake -H. -Bdbuild64 -DCMAKE_BUILD_TYPE=Debug -DXGL_LLPC_PATH=<PATH_TO_LLPC>
-cd dbuild64
-make
-```
-To build 32bit library, please add "-DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32" in cmake.
+SPVGEN is now built as part of the AMDVLK build system, but is not built by default.
 
-SPVGEN references [LLPC](https://github.com/GPUOpen-Drivers/llpc) header files. You need to download the files from llpc/include/.
+First, follow the AMDVLK instructions to get sources and use `cmake` to set up the build.
 
+Then, to build SPVGEN, from your `builds/Release64` or `builds/Debug64` directory, use
+```
+(cd ../../../spvgen/external && python fetch_external_sources.py)
+make -j$(nproc) spvgen
+```
 

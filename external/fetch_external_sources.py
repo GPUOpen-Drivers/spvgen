@@ -108,6 +108,9 @@ def DownloadSourceCode():
 
     os.chdir(TargetDir);
 
+    # Touch the spvgen CMakeLists.txt to ensure that the new directories get used.
+    os.utime('../CMakeLists.txt', None)
+
     for pkg in PACKAGES:
         pkg.GetRevision()
         pkg.CheckOut()
