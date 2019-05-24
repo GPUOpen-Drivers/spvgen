@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 5efb004
-Date: 2019/03/22
-5efb004 Merge pull request #1711 from demett-brcm/avoid-undefined-behaviour
+Commit: b03da6e
+Date: 2019/05/13
+b03da6e Merge pull request #1761 from KhronosGroup/SPIR-V_1.4
 
 [SPIRV-tools]
-Commit: 2d52cbe
-Date: 2019/03/22
-2d52cbe Add some val options to reduce (#2401)
+Commit: 2947e88
+Date: 2019/05/13
+2947e88 Update instrumentation passes to handle 1.4 interfaces (#2573)
 
 [SPIRV-headers]
-Commit: 111a25e
-Date: 2019/03/22
-111a25e Merge pull request #99 from Naghasan/contact-update
+Commit: 4b0985f
+Date: 2019/05/13
+4b0985f Merge pull request #106 from alankemp/fix_json_writer
