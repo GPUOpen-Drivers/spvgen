@@ -65,6 +65,7 @@ namespace spv {
 
 #include "spvgen.h"
 #include "vfx.h"
+#include "../external/glslang/StandAlone/DirStackFileIncluder.h"
 
 // Forward declarations
 bool ReadFileData(const char* pFileName, std::string& data);
@@ -591,6 +592,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFileEx(
     std::vector<int>         sourceCount(fileNum);
     std::vector<const char*> sourcesPtr(fileNum);
     std::vector<const char*const*> sourceListPtr(fileNum);
+    std::vector<const char*const*> fileListPtr(fileNum);
     bool isHlsl = false;
 
     for (int i = 0; i < fileNum; ++i)
@@ -607,6 +609,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFileEx(
     {
         sourcesPtr[i] = sources[i].c_str();
         sourceListPtr[i] = &sourcesPtr[i];
+        fileListPtr[i] = &fileList[i];
     }
 
     if (isHlsl)
@@ -617,6 +620,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramFromFileEx(
                                       &stageTypes[0],
                                       &sourceCount[0],
                                       &sourceListPtr[0],
+                                      &fileListPtr[0],
                                       entryPoints,
                                       ppProgram,
                                       ppLog,
@@ -640,10 +644,12 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
         SpvGenStageFragment,
         SpvGenStageCompute,
     };
+    static const char* const* fileList[SpvGenNativeStageCount] = {};
     return spvCompileAndLinkProgramEx(SpvGenNativeStageCount,
                                      stageTypes,
                                      shaderStageSourceCounts,
                                      shaderStageSources,
+                                     fileList,
                                      nullptr,
                                      ppProgram,
                                      ppLog,
@@ -657,6 +663,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
     const SpvGenStage*   stageTypeList,
     const int*           shaderStageSourceCounts,
     const char* const *  shaderStageSources[],
+    const char* const *  fileList[],
     const char*          entryPoints[],
     void**               ppProgram,
     const char**         ppLog,
@@ -688,7 +695,14 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
             glslang::TShader* pShader = new glslang::TShader(stage);
             shaders[i] = pShader;
 
-            pShader->setStrings(shaderStageSources[i], shaderStageSourceCounts[i]);
+            if (fileList == nullptr || fileList[i] == nullptr)
+            {
+                pShader->setStrings(shaderStageSources[i], shaderStageSourceCounts[i]);
+            }
+            else
+            {
+                pShader->setStringsWithLengthsAndNames(shaderStageSources[i], nullptr, fileList[i], shaderStageSourceCounts[i]);
+            }
 
             if (options & SpvGenOptionVulkanRules)
             {
@@ -743,10 +757,12 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
                 pShader->setInvertY(true);
             }
 
+            DirStackFileIncluder includer;
             compileFailed = !pShader->parse(&Resources,
                 (options & SpvGenOptionDefaultDesktop) ? 110 : 100,
                 false,
-                messages);
+                messages,
+                includer);
 
             if (compileFailed == false)
             {
