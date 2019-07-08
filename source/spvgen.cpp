@@ -411,8 +411,89 @@ void ProcessConfigFile()
 }
 
 // =====================================================================================================================
+// Get SPIR-V target environment from the input SPIR-V binary
+spv_target_env GetSpirvTargetEnv(
+    const uint32_t* pSpvToken)
+{
+    spv_target_env targetEnv = SPV_ENV_UNIVERSAL_1_0;
+
+    assert(pSpvToken[0] == spv::MagicNumber);
+    unsigned int version = pSpvToken[1];
+    unsigned int versionMajor = ((version >> 16) & 0xFF);
+    unsigned int versionMinor = ((version >> 8) & 0xFF);
+
+    if ((versionMajor == 1) && (versionMinor == 0))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_0;
+    }
+    else if ((versionMajor == 1) && (versionMinor == 1))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_1;
+    }
+    else if ((versionMajor == 1) && (versionMinor == 2))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_2;
+    }
+    else if ((versionMajor == 1) && (versionMinor == 3))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_3;
+    }
+    else if ((versionMajor == 1) && (versionMinor == 4))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_4;
+    }
+    else
+    {
+        assert(!"Unknown SPIR-V version"); // Should be known version
+    }
+
+    return targetEnv;
+}
+
+// =====================================================================================================================
+// Get SPIR-V target environment from the input SPIR-V text
+spv_target_env GetSpirvTargetEnv(
+    const char* pSpvText)
+{
+    spv_target_env targetEnv = SPV_ENV_UNIVERSAL_1_3; // Set the default to SPIR-V 1.3
+
+    std::string spvText(pSpvText);
+
+    auto pos = spvText.find("; Version: ");
+    if (pos != std::string::npos)
+    {
+        pos += strlen("; Version: ");
+        unsigned int versionMajor = spvText[pos] - '0';
+        unsigned int versionMinor = spvText[pos + 2] - '0';
+        if ((versionMajor == 1) && (versionMinor == 0))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_0;
+        }
+        else if ((versionMajor == 1) && (versionMinor == 1))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_1;
+        }
+        else if ((versionMajor == 1) && (versionMinor == 2))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_2;
+        }
+        else if ((versionMajor == 1) && (versionMinor == 3))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_3;
+        }
+        else if ((versionMajor == 1) && (versionMinor == 4))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_4;
+        }
+    }
+
+    return targetEnv;
+}
+
+// =====================================================================================================================
 // *.conf => this is a config file that can set limits/resources
-bool SetConfigFile(const std::string& name)
+bool SetConfigFile(
+    const std::string& name)
 {
     if (name.size() < 5)
         return false;
@@ -721,7 +802,8 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
                                     ClientInputSemanticsVersion);
                 pShader->setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
             }
-            pShader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_3);
+
+            pShader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
 
             if (entryPoints && entryPoints[i])
             {
@@ -1015,11 +1097,13 @@ int SH_IMPORT_EXPORT spvAssembleSpirv(
     const char**   ppLog)
 {
     int retval = -1;
+
+    uint32_t options = SPV_TEXT_TO_BINARY_OPTION_PRESERVE_NUMERIC_IDS;
     spv_binary binary;
     spv_diagnostic diagnostic = nullptr;
-    spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_3);
-    spv_result_t result = spvTextToBinary(context, pSpvText,
-                                          strlen(pSpvText), &binary, &diagnostic);
+    spv_context context = spvContextCreate(GetSpirvTargetEnv(pSpvText));
+    spv_result_t result = spvTextToBinaryWithOptions(context, pSpvText,
+                                                     strlen(pSpvText), options, &binary, &diagnostic);
     spvContextDestroy(context);
     if (result == SPV_SUCCESS)
     {
@@ -1064,7 +1148,7 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
     // it can be emitted later in this function.
     spv_text text = nullptr;
     spv_diagnostic diagnostic = nullptr;
-    spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_3);
+    spv_context context = spvContextCreate(GetSpirvTargetEnv(static_cast<const uint32_t*>(pSpvToken)));
     spv_result_t result =
         spvBinaryToText(context, reinterpret_cast<const uint32_t*>(pSpvToken),
                         static_cast<const size_t>(size) / sizeof(uint32_t),
@@ -1104,7 +1188,7 @@ bool SH_IMPORT_EXPORT spvValidateSpirv(
     };
 
     spv_diagnostic diagnostic = nullptr;
-    spv_context context = spvContextCreate(SPV_ENV_UNIVERSAL_1_3);
+    spv_context context = spvContextCreate(GetSpirvTargetEnv(static_cast<const uint32_t*>(pSpvToken)));
     spv_result_t result = spvValidate(context, &binary, &diagnostic);
     spvContextDestroy(context);
     bool success = (result == SPV_SUCCESS);
@@ -1133,10 +1217,8 @@ bool SH_IMPORT_EXPORT spvOptimizeSpirv(
     unsigned int   logSize,
     char*          pLog)
 {
-    spv_target_env target_env = SPV_ENV_UNIVERSAL_1_3;
-
     std::string errorMsg;
-    spvtools::Optimizer optimizer(target_env);
+    spvtools::Optimizer optimizer(GetSpirvTargetEnv(static_cast<const uint32_t*>(pSpvToken)));
     optimizer.SetMessageConsumer([&](spv_message_level_t level,
                                      const char* source,
                                      const spv_position_t& position,
