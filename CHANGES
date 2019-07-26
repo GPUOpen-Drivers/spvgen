@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: b03da6e
-Date: 2019/05/13
-b03da6e Merge pull request #1761 from KhronosGroup/SPIR-V_1.4
+Commit: 22683b4
+Date: 2019/07/03
+22683b4 Merge pull request #1819 from jeffbolznv/demote
 
 [SPIRV-tools]
-Commit: 2947e88
-Date: 2019/05/13
-2947e88 Update instrumentation passes to handle 1.4 interfaces (#2573)
+Commit: 9702d47
+Date: 2019/07/15
+9702d47 Validate that in OpenGL env block variables have Binding (#2685)
 
 [SPIRV-headers]
-Commit: 4b0985f
-Date: 2019/05/13
-4b0985f Merge pull request #106 from alankemp/fix_json_writer
+Commit: 123dc27
+Date: 2019/07/03
+123dc27 Merge pull request #121 from jeffbolznv/demote_to_helper_invocation
