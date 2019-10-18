@@ -5,15 +5,15 @@ Promotion history for /spvgen/external
 
 [glslang]
 Commit: 22683b4
-Date: 2019/07/03
-22683b4 Merge pull request #1819 from jeffbolznv/demote
+Date: 2019/09/24
+973d0e5 Merge pull request #1910 from KhronosGroup/fix-1900-const-nonuniform
 
 [SPIRV-tools]
 Commit: 9702d47
-Date: 2019/07/15
-9702d47 Validate that in OpenGL env block variables have Binding (#2685)
+Date: 2019/09/25
+3a762d5 Add missing GN dependency (#2899)
 
 [SPIRV-headers]
 Commit: 123dc27
-Date: 2019/07/03
-123dc27 Merge pull request #121 from jeffbolznv/demote_to_helper_invocation
+Date: 2019/09/24
+601d738 Add SPV_KHR_physical_storage_buffer.

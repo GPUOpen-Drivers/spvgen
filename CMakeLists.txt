@@ -45,6 +45,8 @@ add_definitions(-DNV_EXTENSIONS)
 
 add_definitions(-DAMD_EXTENSIONS)
 
+add_definitions(-DENABLE_HLSL)
+
 # These two directories only exist after the user does "cd external && python fetch_external_sources.py".
 # You cannot build spvgen without them, but we do not want the cmake stage to fail when they are not
 # present, as spvgen is not built as part of the "all" target.

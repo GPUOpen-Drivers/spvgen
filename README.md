@@ -31,7 +31,6 @@ The APIs are listed in include/spvgen.h and vfx.h.
 * vfxGetPipelineDoc()
 * vfxCloseDoc()
 
-
 ## How to build
 
 SPVGEN is now built as part of the AMDVLK build system, but is not built by default.
