@@ -1,3 +1,34 @@
+/*
+ ***********************************************************************************************************************
+ *
+ *  Copyright (c) 2015-2019 Advanced Micro Devices, Inc. All Rights Reserved.
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to deal
+ *  in the Software without restriction, including without limitation the rights
+ *  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *  copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in all
+ *  copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *  SOFTWARE.
+ *
+ **********************************************************************************************************************/
+/**
+***********************************************************************************************************************
+* @file  spvgen.cpp
+* @brief SPVGEN source file: defines the exported functions for the DLL application.
+***********************************************************************************************************************
+*/
+
 //Note: this file is based on https://github.com/KhronosGroup/glslang/blob/876a0e392e93c16b4dfa66daf382a53005c1e7b0/StandAlone/StandAlone.cpp
 
 //Copyright (C) 2002-2005  3Dlabs Inc. Ltd.
@@ -33,11 +64,6 @@
 //LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 //ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //POSSIBILITY OF SUCH DAMAGE.
-//
-
-//Modifications Copyright (C) 2018 Advanced Micro Devices, Inc.
-
-// spvgen.cpp : Defines the exported functions for the DLL application.
 //
 
 // this only applies to the standalone wrapper, not the front end in general
@@ -1008,7 +1034,6 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageFragment;
     else if (suffix == "comp")
         return SpvGenStageCompute;
-#if VKI_RAY_TRACING
     else if (suffix == "rgen")
         return SpvGenStageRayTracingRayGen;
     else if (suffix == "rint")
@@ -1025,7 +1050,6 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageTask;
     else if (suffix == "mesh")
         return SpvGenStageMesh;
-#endif
 
     return SpvGenStageInvalid;
 }
@@ -1344,7 +1368,6 @@ void SH_IMPORT_EXPORT vfxPrintDoc(
     Vfx::vfxPrintDoc(pDoc);
 }
 
-
 #if !defined _MSC_VER && !defined MINGW_HAS_SECURE_API
 
 #include <errno.h>
@@ -1518,6 +1541,4 @@ __attribute__((destructor)) static void Destroy()
 }
 
 #endif
-
-
 

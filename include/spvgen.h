@@ -25,7 +25,7 @@
 /**
  ***********************************************************************************************************************
  * @file  spvgen.h
- * @brief SPVGEN header file: contains the definition and the wrap implementation of SPIR-V generator entry-points
+ * @brief SPVGEN header file: contains the definition and the wrap implementation of SPIR-V generator entry-points.
  ***********************************************************************************************************************
  */
 #pragma once
@@ -94,6 +94,14 @@ enum SpvGenStage : uint32_t
     SpvGenStageGeometry,
     SpvGenStageFragment,
     SpvGenStageCompute,
+    SpvGenStageRayTracingRayGen,
+    SpvGenStageRayTracingIntersect,
+    SpvGenStageRayTracingAnyHit,
+    SpvGenStageRayTracingClosestHit,
+    SpvGenStageRayTracingMiss,
+    SpvGenStageRayTracingCallable,
+    SpvGenStageTask,
+    SpvGenStageMesh,
     SpvGenStageCount,
     SpvGenStageInvalid = ~0u,
     SpvGenNativeStageCount = SpvGenStageCompute + 1,
