@@ -33,7 +33,12 @@ endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to the LLPC.")
+# Cater for LLPC moving into an llpc subdirectory in its repository.
+if (EXISTS ${PROJECT_SOURCE_DIR}/../llpc/llpc/CMakeLists.txt)
+  set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc CACHE PATH "Specify the path to the LLPC." FORCE)
+else()
+  set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to the LLPC." FORCE)
+endif()
 
 set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
 
