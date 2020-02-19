@@ -66,24 +66,36 @@ add_library(spvgen SHARED "")
 
 set_target_properties(spvgen PROPERTIES PREFIX "")
 
+if(EXISTS ${PROJECT_SOURCE_DIR}/../llpc/tool/vfx)
+    set(XGL_VFX_PATH ${PROJECT_SOURCE_DIR}/../llpc/tool/vfx CACHE PATH "The path of vfx.")
+else()
+    set(XGL_VFX_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc/tool/vfx CACHE PATH "The path of vfx.")
+endif()
+
+if(EXISTS ${PROJECT_SOURCE_DIR}/../llpc/include)
+    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/include)
+else()
+    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include)
+endif()
+
 include_directories(
 	include
 	external/glslang
 	external/glslang/SPIRV
 	external/SPIRV-tools/include
 	external/llpc/include
-	${XGL_LLPC_PATH}/include
-	${XGL_LLPC_PATH}/tool/vfx
+	${XGL_LLPC_INC_DIR}
+	${XGL_VFX_PATH}
 	${VULKAN_HEADER_PATH}
 )
 
 target_sources(spvgen PRIVATE
 	source/spvgen.cpp
-    ${XGL_LLPC_PATH}/tool/vfx/vfxParser.cpp
-    ${XGL_LLPC_PATH}/tool/vfx/vfxPipelineDoc.cpp
-    ${XGL_LLPC_PATH}/tool/vfx/vfxRenderDoc.cpp
-    ${XGL_LLPC_PATH}/tool/vfx/vfxSection.cpp
-    ${XGL_LLPC_PATH}/tool/vfx/vfxEnumsConverter.cpp
+    ${XGL_VFX_PATH}/vfxParser.cpp
+    ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
+    ${XGL_VFX_PATH}/vfxRenderDoc.cpp
+    ${XGL_VFX_PATH}/vfxSection.cpp
+    ${XGL_VFX_PATH}/vfxEnumsConverter.cpp
 )
 
 target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt)
