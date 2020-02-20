@@ -73,9 +73,9 @@ else()
 endif()
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/../llpc/include)
-    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/include)
+    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/include CACHE PATH "The path of llpc.h for spvgen")
 else()
-    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include)
+    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include CACHE PATH "The path of llpc.h for spvgen")
 endif()
 
 include_directories(
