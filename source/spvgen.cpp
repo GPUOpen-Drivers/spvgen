@@ -1046,10 +1046,6 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageRayTracingMiss;
     else if (suffix == "rcall")
         return SpvGenStageRayTracingCallable;
-    else if (suffix == "task")
-        return SpvGenStageTask;
-    else if (suffix == "mesh")
-        return SpvGenStageMesh;
 
     return SpvGenStageInvalid;
 }

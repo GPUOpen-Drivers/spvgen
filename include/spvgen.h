@@ -100,8 +100,6 @@ enum SpvGenStage : uint32_t
     SpvGenStageRayTracingClosestHit,
     SpvGenStageRayTracingMiss,
     SpvGenStageRayTracingCallable,
-    SpvGenStageTask,
-    SpvGenStageMesh,
     SpvGenStageCount,
     SpvGenStageInvalid = ~0u,
     SpvGenNativeStageCount = SpvGenStageCompute + 1,
