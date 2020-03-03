@@ -72,11 +72,7 @@ else()
     set(XGL_VFX_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc/tool/vfx CACHE PATH "The path of vfx.")
 endif()
 
-if(EXISTS ${PROJECT_SOURCE_DIR}/../llpc/include)
-    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/include CACHE PATH "The path of llpc.h for spvgen")
-else()
-    set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include CACHE PATH "The path of llpc.h for spvgen")
-endif()
+set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include CACHE PATH "The path of llpc.h for spvgen")
 
 include_directories(
 	include
