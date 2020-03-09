@@ -23,7 +23,7 @@
  #
  #######################################################################################################################
 
-#!/usr/bin/python3
+#!/usr/bin/python
 
 # This script is used to download the glslang, SPIRV-Tools, and SPIRV-Headers from github.
 
