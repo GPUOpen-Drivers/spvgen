@@ -23,7 +23,7 @@
  #
  #######################################################################################################################
 
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # This script is used to download the glslang, SPIRV-Tools, and SPIRV-Headers from github.
 
@@ -45,7 +45,7 @@ class GitRepo:
     def GetRevision(self):
         SrcFile = TargetDir + "../CHANGES";
         if not os.path.exists(SrcFile):
-            print SrcFile + " does not exist, default revision is " + self.revision;
+            print(SrcFile + " does not exist, default revision is " + self.revision);
             return;
 
         revFile = open(SrcFile,'r');
@@ -63,16 +63,16 @@ class GitRepo:
         revFile.close();
 
         if (found == False):
-            print "Warning: Revision is not gotten from " + SrcFile + " correctly, please check it!!!"
+            print("Warning: Revision is not gotten from " + SrcFile + " correctly, please check it!!!")
         else:
-            print "Get the revision of " + self.extractDir + ": " + self.revision;
+            print("Get the revision of " + self.extractDir + ": " + self.revision);
 
     def CheckOut(self):
         fullDstPath = os.path.join(TargetDir, self.extractDir)
         if not os.path.exists(fullDstPath):
             os.system("git clone " + self.httpsUrl + " " + fullDstPath);
         else:
-            print "Warning: " + fullDstPath + " exist already, will not download from github again"
+            print("Warning: " + fullDstPath + " exist already, will not download from github again")
             return;
 
         os.chdir(fullDstPath);
