@@ -875,6 +875,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
             if (compileFailed == false)
             {
                 pProgram->addShader(pShader);
+                stageMask |= (1 << stageTypeList[i]);
             }
 
             if ((options & SpvGenOptionSuppressInfolog) == false)
@@ -947,6 +948,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
                 }
                 linkIndexBase = i + 1;
                 pProgram->AddProgram();
+                stageMask = 0;
             }
         }
     }
