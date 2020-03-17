@@ -33,12 +33,7 @@ endif ()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Cater for LLPC moving into an llpc subdirectory in its repository.
-if (EXISTS ${PROJECT_SOURCE_DIR}/../llpc/llpc/CMakeLists.txt)
-  set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc CACHE PATH "Specify the path to the LLPC." FORCE)
-elseif (EXISTS ${PROJECT_SOURCE_DIR}/../llpc/CMakeLists.txt)
-  set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc CACHE PATH "Specify the path to the LLPC." FORCE)
-endif()
+set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc CACHE PATH "Specify the path to the LLPC." FORCE)
 
 set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
 
@@ -66,13 +61,15 @@ add_library(spvgen SHARED "")
 
 set_target_properties(spvgen PROPERTIES PREFIX "")
 
-if(EXISTS ${PROJECT_SOURCE_DIR}/../llpc/tool/vfx)
-    set(XGL_VFX_PATH ${PROJECT_SOURCE_DIR}/../llpc/tool/vfx CACHE PATH "The path of vfx.")
+# vkgcDefs.h is included in llpc/tool/vfx/vfx.h
+# llpc.h is included in llpc/llpc/tool/vfx/vfx.h
+if(EXISTS ${XGL_LLPC_PATH}/../tool/vfx/vfx.h)
+    set(XGL_VFX_PATH ${XGL_LLPC_PATH}/../tool/vfx)
+    set(XGL_LLPC_INC_DIR ${XGL_LLPC_PATH}/../include)
 else()
-    set(XGL_VFX_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc/tool/vfx CACHE PATH "The path of vfx.")
+    set(XGL_VFX_PATH ${XGL_LLPC_PATH}/tool/vfx)
+    set(XGL_LLPC_INC_DIR ${XGL_LLPC_PATH}/include)
 endif()
-
-set(XGL_LLPC_INC_DIR ${PROJECT_SOURCE_DIR}/../llpc/llpc/include CACHE PATH "The path of llpc.h for spvgen")
 
 include_directories(
 	include
