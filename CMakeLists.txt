@@ -65,7 +65,10 @@ set_target_properties(spvgen PROPERTIES PREFIX "")
 
 # vkgcDefs.h is included in llpc/tool/vfx/vfx.h
 # llpc.h is included in llpc/llpc/tool/vfx/vfx.h
-if(EXISTS ${XGL_LLPC_PATH}/../tool/vfx/vfx.h)
+if(EXISTS ${XGL_VKGC_PATH}/tool/vfx/vfx.h)
+    set(XGL_VFX_PATH ${XGL_VKGC_PATH}/tool/vfx)
+    set(XGL_LLPC_INC_DIR ${XGL_VKGC_PATH}/include)
+elseif(EXISTS ${XGL_LLPC_PATH}/../tool/vfx/vfx.h)
     set(XGL_VFX_PATH ${XGL_LLPC_PATH}/../tool/vfx)
     set(XGL_LLPC_INC_DIR ${XGL_LLPC_PATH}/../include)
 else()
