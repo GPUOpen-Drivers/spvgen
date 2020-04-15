@@ -4,9 +4,9 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 22683b4
-Date: 2019/09/24
-973d0e5 Merge pull request #1910 from KhronosGroup/fix-1900-const-nonuniform
+Commit: bfe4c59
+Date: 2020/03/28
+bfe4c59 Merge pull request #2160 from greg-lunarg/kg110
 
 [SPIRV-tools]
 Commit: 9702d47
