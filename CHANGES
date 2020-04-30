@@ -9,11 +9,11 @@ Date: 2020/03/28
 bfe4c59 Merge pull request #2160 from greg-lunarg/kg110
 
 [SPIRV-tools]
-Commit: 9702d47
-Date: 2019/09/25
-3a762d5 Add missing GN dependency (#2899)
+Commit: fd773eb
+Date: 2020/03/30
+fd773eb Start SPIRV-Tools v2020.3
 
 [SPIRV-headers]
-Commit: 123dc27
-Date: 2019/09/24
-601d738 Add SPV_KHR_physical_storage_buffer.
+Commit: f8bf11a
+Date: 2020/03/30
+f8bf11a Merge pull request #149 from dgkoch/prov_ray_tracing
