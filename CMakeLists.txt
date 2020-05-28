@@ -27,6 +27,8 @@ cmake_minimum_required(VERSION 3.5)
 
 PROJECT(spvgen VERSION 1 LANGUAGES C CXX)
 
+option(SPVGEN_ENABLE_WERROR "Build with -Werror enabled" OFF)
+
 if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fno-rtti")
 endif ()
@@ -56,6 +58,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/external/glslang/CMakeLists.txt)
     add_subdirectory(external/glslang)
 endif()
 if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-tools/CMakeLists.txt)
+    set(SPIRV_WERROR ${SPVGEN_ENABLE_WERROR} CACHE BOOL "${PROJECT_NAME} override." FORCE)
     add_subdirectory(external/SPIRV-tools)
 endif()
 
@@ -82,9 +85,9 @@ include_directories(
 	external/glslang/SPIRV
 	external/SPIRV-tools/include
 	external/llpc/include
+	${VULKAN_HEADER_PATH}
 	${XGL_LLPC_INC_DIR}
 	${XGL_VFX_PATH}
-	${VULKAN_HEADER_PATH}
 )
 
 target_sources(spvgen PRIVATE
@@ -97,4 +100,3 @@ target_sources(spvgen PRIVATE
 )
 
 target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt)
-
