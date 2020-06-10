@@ -90,13 +90,28 @@ include_directories(
 	${XGL_VFX_PATH}
 )
 
-target_sources(spvgen PRIVATE
-	source/spvgen.cpp
-    ${XGL_VFX_PATH}/vfxParser.cpp
-    ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
-    ${XGL_VFX_PATH}/vfxRenderDoc.cpp
-    ${XGL_VFX_PATH}/vfxSection.cpp
-    ${XGL_VFX_PATH}/vfxEnumsConverter.cpp
-)
+if(EXISTS ${XGL_VKGC_PATH}/tool/vfx/vfxVkSection.cpp)
+    add_definitions(-DVFX_SUPPORT_VK_PIPELINE=1)
+    add_definitions(-DVFX_SUPPORT_RENDER_DOCOUMENT=1)
+    target_sources(spvgen PRIVATE
+        source/spvgen.cpp
+        ${XGL_VFX_PATH}/vfxParser.cpp
+        ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
+        ${XGL_VFX_PATH}/vfxRenderDoc.cpp
+        ${XGL_VFX_PATH}/vfxSection.cpp
+        ${XGL_VFX_PATH}/vfxEnumsConverter.cpp
+        ${XGL_VFX_PATH}/vfxVkSection.cpp
+        ${XGL_VFX_PATH}/vfxRenderSection.cpp
+    )
+else()
+    target_sources(spvgen PRIVATE
+        source/spvgen.cpp
+        ${XGL_VFX_PATH}/vfxParser.cpp
+        ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
+        ${XGL_VFX_PATH}/vfxRenderDoc.cpp
+        ${XGL_VFX_PATH}/vfxSection.cpp
+        ${XGL_VFX_PATH}/vfxEnumsConverter.cpp
+    )
+endif()
 
 target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt)
