@@ -9,9 +9,9 @@ Date: 2020/03/28
 bfe4c59 Merge pull request #2160 from greg-lunarg/kg110
 
 [SPIRV-tools]
-Commit: fd773eb
-Date: 2020/03/30
-fd773eb Start SPIRV-Tools v2020.3
+Commit: e128ab0
+Date: 2020/06/11
+e128ab0 Finalize SPIRV-Tools v2020.3
 
 [SPIRV-headers]
 Commit: f8bf11a
