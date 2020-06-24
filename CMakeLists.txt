@@ -85,9 +85,9 @@ include_directories(
 	external/glslang/SPIRV
 	external/SPIRV-tools/include
 	external/llpc/include
-	${VULKAN_HEADER_PATH}
 	${XGL_LLPC_INC_DIR}
 	${XGL_VFX_PATH}
+	${VULKAN_HEADER_PATH}
 )
 
 if(EXISTS ${XGL_VKGC_PATH}/tool/vfx/vfxVkSection.cpp)
