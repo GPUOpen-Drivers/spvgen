@@ -1401,23 +1401,29 @@ bool ReadFileData(
     const char* pFileName,
     std::string& data)
 {
-    FILE* pInFile = fopen(pFileName, "r");
-    if (pInFile == nullptr)
+    std::ifstream inFile(pFileName);
+    if (!inFile.good())
     {
         return false;
     }
-
-    fseek(pInFile, 0, SEEK_END);
-    size_t textSize = ftell(pInFile);
-    fseek(pInFile, 0, SEEK_SET);
-
-    char* pTempBuf = new char[textSize + 1];
-    assert(pTempBuf != nullptr);
-    memset(pTempBuf, 0, textSize + 1);
-    auto readSize = fread(pTempBuf, 1, textSize, pInFile);
-    pTempBuf[readSize] = 0;
-    data = pTempBuf;
-    delete[] pTempBuf;
+    inFile.seekg(0, std::ios::end);
+    if (!inFile.good())
+    {
+        return false;
+    }
+    size_t size = inFile.tellg();
+    data.resize(size, '\0');
+    inFile.seekg(0);
+    if (!inFile.good())
+    {
+        return false;
+    }
+    inFile.read(&data[0], size);
+    if (!inFile.good())
+    {
+        return false;
+    }
+    data.resize(inFile.gcount());
     return true;
 }
 

@@ -414,7 +414,7 @@ static const char* SpvGeneratorName = "spvgen.so";
 #define INIT_OPT_FUNC(func) \
   g_pfn##func = reinterpret_cast<PFN_##func>(dlsym(hModule, #func));
 
-#endif // _WIN32
+#endif
 
 #define DEINITFUNC(func) g_pfn##func = nullptr;
 
