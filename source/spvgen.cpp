@@ -468,6 +468,10 @@ spv_target_env GetSpirvTargetEnv(
     {
         targetEnv = SPV_ENV_UNIVERSAL_1_4;
     }
+    else if ((versionMajor == 1) && (versionMinor == 5))
+    {
+        targetEnv = SPV_ENV_UNIVERSAL_1_5;
+    }
     else
     {
         assert(!"Unknown SPIR-V version"); // Should be known version
@@ -510,6 +514,10 @@ spv_target_env GetSpirvTargetEnv(
         else if ((versionMajor == 1) && (versionMinor == 4))
         {
             targetEnv = SPV_ENV_UNIVERSAL_1_4;
+        }
+        else if ((versionMajor == 1) && (versionMinor == 5))
+        {
+            targetEnv = SPV_ENV_UNIVERSAL_1_5;
         }
     }
 
@@ -829,7 +837,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
                 pShader->setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450);
             }
 
-            pShader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_4);
+            pShader->setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_5);
 
             if (entryPoints && entryPoints[i])
             {
