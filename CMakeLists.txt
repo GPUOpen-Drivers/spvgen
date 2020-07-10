@@ -90,7 +90,7 @@ include_directories(
 	${VULKAN_HEADER_PATH}
 )
 
-if(EXISTS ${XGL_VKGC_PATH}/tool/vfx/vfxVkSection.cpp)
+if(EXISTS ${XGL_VFX_PATH}/vfxVkSection.cpp)
     add_definitions(-DVFX_SUPPORT_VK_PIPELINE=1)
     add_definitions(-DVFX_SUPPORT_RENDER_DOCOUMENT=1)
     target_sources(spvgen PRIVATE
