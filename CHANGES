@@ -4,16 +4,16 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: bfe4c59
-Date: 2020/03/28
-bfe4c59 Merge pull request #2160 from greg-lunarg/kg110
+Commit: b919bc88
+Date: 2020/06/11
+b919bc88  Fix signed / unsigned mismatch warning (#2266)
 
 [SPIRV-tools]
-Commit: fd773eb
-Date: 2020/03/30
-fd773eb Start SPIRV-Tools v2020.3
+Commit: 7a1af587
+Date: 2020/06/23
+7a1af587 Support OpCompositeExtract pattern in desc_sroa (#3456)
 
 [SPIRV-headers]
-Commit: f8bf11a
-Date: 2020/03/30
-f8bf11a Merge pull request #149 from dgkoch/prov_ray_tracing
+Commit: 11d7637
+Date: 2020/06/01
+11d7637 Merge pull request #159 from dneto0/fix-quotes
