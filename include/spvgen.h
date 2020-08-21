@@ -86,6 +86,14 @@ enum SpvGenOptions : uint32_t
     SpvGenOptionSuppressInfolog      = (1 << 12)
 };
 
+enum SpvSourceLanguage : uint32_t
+{
+    SpvSourceLanguageGLSL,      // OpenGL-style
+    SpvSourceLanguageVulkan,    // Vulkan GLSL
+    SpvSourceLanguageMSL,       // Metal Shading Language
+    SpvSourceLanguageHLSL,      // HLSL-style
+    SpvSourceLanguageESSL,      // ESSL
+};
 enum SpvGenStage : uint32_t
 {
     SpvGenStageVertex,
@@ -164,6 +172,12 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
     const void*  pSpvToken,
     unsigned int bufSize,
     char*        pBuffer);
+
+bool SH_IMPORT_EXPORT spvCrossSpirv(
+    SpvSourceLanguage spvLanguage,
+    unsigned int size,
+    const void* pSpvToken,
+    char** ppBuffer);
 
 bool SH_IMPORT_EXPORT spvValidateSpirv(
     unsigned int size,
@@ -279,6 +293,12 @@ typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvDisassembleSpirv)(
     unsigned int        textBufSize,
     char*               pSpvTextBuf);
 
+typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvCrossSpirv)(
+    SpvSourceLanguage spvLanguage,
+    unsigned int size,
+    const void* pSpvToken,
+    char** ppSourceString);
+
 typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvValidateSpirv)(
     unsigned int        size,
     const void*         pSpvToken,
@@ -339,6 +359,7 @@ DECL_EXPORT_FUNC(spvGetSpirvBinaryFromProgram);
 DECL_EXPORT_FUNC(spvGetStageTypeFromName);
 DECL_EXPORT_FUNC(spvAssembleSpirv);
 DECL_EXPORT_FUNC(spvDisassembleSpirv);
+DECL_EXPORT_FUNC(spvCrossSpirv);
 DECL_EXPORT_FUNC(spvValidateSpirv);
 DECL_EXPORT_FUNC(spvOptimizeSpirv);
 DECL_EXPORT_FUNC(spvFreeBuffer);
@@ -367,6 +388,7 @@ DEFI_EXPORT_FUNC(spvGetSpirvBinaryFromProgram);
 DEFI_EXPORT_FUNC(spvGetStageTypeFromName);
 DEFI_EXPORT_FUNC(spvAssembleSpirv);
 DEFI_EXPORT_FUNC(spvDisassembleSpirv);
+DEFI_EXPORT_FUNC(spvCrossSpirv);
 DEFI_EXPORT_FUNC(spvValidateSpirv);
 DEFI_EXPORT_FUNC(spvOptimizeSpirv);
 DEFI_EXPORT_FUNC(spvFreeBuffer);
@@ -457,6 +479,7 @@ bool SPVAPI InitSpvGen(
         INITFUNC(spvGetStageTypeFromName);
         INITFUNC(spvAssembleSpirv);
         INITFUNC(spvDisassembleSpirv);
+        INITFUNC(spvCrossSpirv);
         INITFUNC(spvValidateSpirv);
         INITFUNC(spvOptimizeSpirv);
         INITFUNC(spvFreeBuffer);
@@ -494,6 +517,7 @@ bool SPVAPI InitSpvGen(
         DEINITFUNC(spvGetStageTypeFromName);
         DEINITFUNC(spvAssembleSpirv);
         DEINITFUNC(spvDisassembleSpirv);
+        DEINITFUNC(spvCrossSpirv);
         DEINITFUNC(spvValidateSpirv);
         DEINITFUNC(spvOptimizeSpirv);
         DEINITFUNC(spvFreeBuffer);
@@ -520,6 +544,7 @@ bool SPVAPI InitSpvGen(
 #define spvGetStageTypeFromName             g_pfnspvGetStageTypeFromName
 #define spvAssembleSpirv                    g_pfnspvAssembleSpirv
 #define spvDisassembleSpirv                 g_pfnspvDisassembleSpirv
+#define spvCrossSpirv                       g_pfnspvCrossSpirv
 #define spvValidateSpirv                    g_pfnspvValidateSpirv
 #define spvOptimizeSpirv                    g_pfnspvOptimizeSpirv
 #define spvFreeBuffer                       g_pfnspvFreeBuffer

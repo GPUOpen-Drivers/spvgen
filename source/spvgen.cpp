@@ -68,9 +68,10 @@
 
 // this only applies to the standalone wrapper, not the front end in general
 #include "glslang/Include/ShHandle.h"
-#include "glslang/Include/revision.h"
 #include "glslang/Public/ShaderLang.h"
+#include "glslang/build_info.h"
 #include "SPIRV/GlslangToSpv.h"
+
 #include "spirv-tools/libspirv.h"
 #include "spirv-tools/optimizer.hpp"
 
@@ -83,6 +84,15 @@ namespace spv {
         #include "GLSL.ext.AMD.h"
     }
 }
+
+using namespace spv;
+#include "spirv_cross_util.hpp"
+#include "spirv_glsl.hpp"
+#include "spirv_hlsl.hpp"
+#include "spirv_msl.hpp"
+#include "spirv_parser.hpp"
+#include "spirv_reflect.hpp"
+
 #include "disassemble.h"
 #include <sstream>
 #include <string>
@@ -1073,7 +1083,7 @@ bool SH_IMPORT_EXPORT spvGetVersion(
     case SpvGenVersionGlslang:
         {
             *pVersion = glslang::GetSpirvGeneratorVersion();
-            *pReversion = GLSLANG_MINOR_VERSION;
+            *pReversion = GLSLANG_VERSION_MINOR;
             break;
         }
     case SpvGenVersionSpirv:
@@ -1198,6 +1208,145 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
     }
 
     spvTextDestroy(text);
+    return success;
+}
+
+// =====================================================================================================================
+// convert SPIR-V binary token to GLSL using Khronos SPIRV-Cross,
+//
+// NOTE: ppGlslSource should be freed by spvFreeBuffer
+bool SH_IMPORT_EXPORT spvCrossSpirv(
+    SpvSourceLanguage sourceLanguage,
+    unsigned int size,
+    const void* pSpvToken,
+    char** ppSourceString)
+{
+    bool success = true;
+    std::string sourceString = "";
+    try
+    {
+        std::vector<uint32_t> spvBinary(size / sizeof(uint32_t));
+        memcpy(spvBinary.data(), pSpvToken, size);
+        spirv_cross::Parser spvParser(std::move(spvBinary));
+        spvParser.parse();
+
+        bool combineImageSamplers = false;
+        bool buildDummySampler = false;
+        std::unique_ptr<spirv_cross::CompilerGLSL> pCompiler;
+        if (sourceLanguage == SpvSourceLanguageMSL)
+        {
+            pCompiler.reset(new spirv_cross::CompilerMSL(std::move(spvParser.get_parsed_ir())));
+            auto* pMslCompiler = static_cast<spirv_cross::CompilerMSL*>(pCompiler.get());
+            auto mslOptioins = pMslCompiler->get_msl_options();
+            mslOptioins.capture_output_to_buffer = false;
+            mslOptioins.swizzle_texture_samples = false;
+            mslOptioins.invariant_float_math = false;
+            mslOptioins.pad_fragment_output_components = false;
+            mslOptioins.tess_domain_origin_lower_left = false;
+            mslOptioins.argument_buffers = false;
+            mslOptioins.argument_buffers = false;
+            mslOptioins.texture_buffer_native = false;
+            mslOptioins.multiview = false;
+            mslOptioins.view_index_from_device_index = false;
+            mslOptioins.dispatch_base = false;
+            mslOptioins.enable_decoration_binding = false;
+            mslOptioins.force_active_argument_buffer_resources = false;
+            mslOptioins.force_native_arrays = false;
+            mslOptioins.enable_frag_depth_builtin = true;
+            mslOptioins.enable_frag_stencil_ref_builtin = true;
+            mslOptioins.enable_frag_output_mask = 0xffffffff;
+            mslOptioins.enable_clip_distance_user_varying = true;
+            pMslCompiler->set_msl_options(mslOptioins);
+        }
+        else if (sourceLanguage == SpvSourceLanguageHLSL)
+        {
+            pCompiler.reset(new spirv_cross::CompilerHLSL(std::move(spvParser.get_parsed_ir())));
+        }
+        else
+        {
+            if (sourceLanguage == SpvSourceLanguageVulkan)
+            {
+                combineImageSamplers = false;
+            }
+            else
+            {
+                buildDummySampler = true;
+            }
+            pCompiler.reset(new spirv_cross::CompilerGLSL(std::move(spvParser.get_parsed_ir())));
+        }
+
+        spirv_cross::CompilerGLSL::Options commonOptions = pCompiler->get_common_options();
+        if (sourceLanguage == SpvSourceLanguageESSL)
+        {
+            commonOptions.es = true;
+        }
+        commonOptions.force_temporary = false;
+        commonOptions.separate_shader_objects = false;
+        commonOptions.flatten_multidimensional_arrays = false;
+        commonOptions.enable_420pack_extension = true;
+        commonOptions.vulkan_semantics = true;
+        commonOptions.vertex.fixup_clipspace = false;
+        commonOptions.vertex.flip_vert_y = false;
+        commonOptions.vertex.support_nonzero_base_instance = true;
+        commonOptions.emit_push_constant_as_uniform_buffer = false;
+        commonOptions.emit_uniform_buffer_as_plain_uniforms = false;
+        commonOptions.emit_line_directives = false;
+        commonOptions.enable_storage_image_qualifier_deduction = true;
+        commonOptions.force_zero_initialized_variables = false;
+        pCompiler->set_common_options(commonOptions);
+
+        if (sourceLanguage == SpvSourceLanguageHLSL)
+        {
+            auto* pHlslCompiler = static_cast<spirv_cross::CompilerHLSL*>(pCompiler.get());
+            auto hlslOptions = pHlslCompiler->get_hlsl_options();
+            hlslOptions.support_nonzero_base_vertex_base_instance = false;
+            hlslOptions.force_storage_buffer_as_uav = false;
+            hlslOptions.nonwritable_uav_texture_as_srv = false;
+            hlslOptions.enable_16bit_types = false;
+            pHlslCompiler->set_hlsl_options(hlslOptions);
+
+            pHlslCompiler->set_resource_binding_flags(0);
+        }
+
+        if (buildDummySampler)
+        {
+            uint32_t sampler = pCompiler->build_dummy_sampler_for_combined_images();
+            if (sampler != 0)
+            {
+                // Set some defaults to make validation happy.
+                pCompiler->set_decoration(sampler, DecorationDescriptorSet, 0);
+                pCompiler->set_decoration(sampler, DecorationBinding, 0);
+            }
+        }
+
+        if (combineImageSamplers)
+        {
+            pCompiler->build_combined_image_samplers();
+        }
+
+        if (sourceLanguage == SpvSourceLanguageHLSL)
+        {
+            auto* pHlslCompiler = static_cast<spirv_cross::CompilerHLSL*>(pCompiler.get());
+            uint32_t newBuiltin = pHlslCompiler->remap_num_workgroups_builtin();
+            if (newBuiltin != 0)
+            {
+                pHlslCompiler->set_decoration(newBuiltin, DecorationDescriptorSet, 0);
+                pHlslCompiler->set_decoration(newBuiltin, DecorationBinding, 0);
+            }
+        }
+        sourceString = pCompiler->compile();
+
+    }
+    catch(const std::exception& e)
+    {
+        printf("SPIRV-Cross threw an exception : % s\n", e.what());
+        assert(!e.what());
+        success = false;
+    }
+
+    size_t sourceStringSize = sourceString.length() + 1;
+    *ppSourceString = static_cast<char*>(malloc(sourceStringSize));
+    memcpy(*ppSourceString, sourceString.c_str(), sourceStringSize);
     return success;
 }
 

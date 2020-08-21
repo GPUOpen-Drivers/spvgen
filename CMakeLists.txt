@@ -61,6 +61,9 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-tools/CMakeLists.txt)
     set(SPIRV_WERROR ${SPVGEN_ENABLE_WERROR} CACHE BOOL "${PROJECT_NAME} override." FORCE)
     add_subdirectory(external/SPIRV-tools)
 endif()
+if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-cross/CMakeLists.txt)
+    add_subdirectory(external/SPIRV-cross)
+endif()
 
 add_library(spvgen SHARED "")
 
@@ -84,6 +87,7 @@ include_directories(
 	external/glslang
 	external/glslang/SPIRV
 	external/SPIRV-tools/include
+	external/SPIRV-cross
 	external/llpc/include
 	${XGL_LLPC_INC_DIR}
 	${XGL_VFX_PATH}
@@ -114,4 +118,4 @@ else()
     )
 endif()
 
-target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt)
+target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c)

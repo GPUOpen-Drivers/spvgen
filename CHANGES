@@ -4,9 +4,9 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: b919bc88
-Date: 2020/06/11
-b919bc88  Fix signed / unsigned mismatch warning (#2266)
+Commit: b99a6a72
+Date: 2020/07/21
+b99a6a72  Merge pull request #2352 from ben-clayton/vs2015
 
 [SPIRV-tools]
 Commit: 7a1af587
@@ -17,3 +17,8 @@ Date: 2020/06/23
 Commit: 11d7637
 Date: 2020/06/01
 11d7637 Merge pull request #159 from dneto0/fix-quotes
+
+[SPIRV-cross]
+Commit: 6575e451
+Date: 2020/07/11
+6575e451 Merge pull request #1423 from KhronosGroup/msvc-2013-fix
