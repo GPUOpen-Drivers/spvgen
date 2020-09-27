@@ -1339,7 +1339,7 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
     }
     catch(const std::exception& e)
     {
-        printf("SPIRV-Cross threw an exception : % s\n", e.what());
+        printf("SPIRV-Cross threw an exception : %s\n", e.what());
         assert(!e.what());
         success = false;
     }
