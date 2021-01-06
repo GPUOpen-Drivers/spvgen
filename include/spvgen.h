@@ -83,7 +83,9 @@ enum SpvGenOptions : uint32_t
     SpvGenOptionOptimizeDisable      = (1 << 9),
     SpvGenOptionOptimizeSize         = (1 << 10),
     SpvGenOptionInvertY              = (1 << 11),
-    SpvGenOptionSuppressInfolog      = (1 << 12)
+    SpvGenOptionSuppressInfolog      = (1 << 12),
+    SpvGenOptionHlslDX9compatible    = (1 << 13),
+    SpvGenOptionHlslEnable16BitTypes = (1 << 14)
 };
 
 enum SpvSourceLanguage : uint32_t

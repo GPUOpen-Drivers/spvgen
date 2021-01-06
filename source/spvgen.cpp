@@ -565,6 +565,10 @@ void SetMessageOptions(EShMessages& messages, int options)
         messages = (EShMessages)(messages | EShMsgDebugInfo);
     if (options & SpvGenOptionOptimizeDisable)
         messages = (EShMessages)(messages | EShMsgHlslLegalization);
+    if (options & SpvGenOptionHlslDX9compatible)
+        messages = (EShMessages)(messages | EShMsgHlslDX9Compatible);
+    if (options & SpvGenOptionHlslEnable16BitTypes)
+        messages = (EShMessages)(messages | EShMsgHlslEnable16BitTypes);
 }
 
 // =====================================================================================================================
@@ -600,6 +604,12 @@ public:
     bool link(EShMessages message)
     {
         return GetCurrentProgram()->link(message);
+    }
+
+    // Map IO for current program
+    bool mapIO()
+    {
+        return GetCurrentProgram()->mapIO();
     }
 
     // Get link log from current program
@@ -931,6 +941,9 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
             {
                 // Program-level processing...
                 linkFailed = !pProgram->link(messages);
+
+                // Map IO, consistent with glslangValidator StandAlone: https://github.com/KhronosGroup/glslang/blob/master/StandAlone/StandAlone.cpp line 1138
+                linkFailed = !pProgram->mapIO();
 
                 if ((options & SpvGenOptionSuppressInfolog) == false)
                 {
