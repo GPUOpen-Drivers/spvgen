@@ -4,23 +4,24 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 4d41da3b
-Date: 2020/11/24
-4d41da3b Add ray query capability if acceleration structure or ray query types declared (#2469)
+Commit: 3de5cfe5
+Date: 2021/1/6
+3de5cfe5 Merge pull request #2498 from dezinjob/fix-option-replacement-vs
 
 [SPIRV-tools]
-Commit: 2c458414 
-Date: 2020/11/25
-2c458414 BuildModule: optionally avoid adding new OpLine instructions (#4033)
+Commit: 8383bd5d
+Date: 2021/1/18
+8383bd5d Migrate all Kokoro build scripts over to use the docker VM image (#4114)
 
 [SPIRV-headers]
-Commit: 104ecc3 
-Date: 2020/11/23
-104ecc3 Merge pull request #180 from dneto0/issue-179
+Commit: f027d53 
+Date: 2020/11/27
+f027d53  Merge pull request #184 from dgkoch/dkoch_remove_hittkhr
 
 
 [SPIRV-cross]
-Commit: be527632
-Date: 2020/11/25
-be527632 Merge branch 'unused' of git://github.com/comex/SPIRV-Cross
+Commit: 9acb9ec3
+Date: 2021/1/15
+9acb9ec3 Merge pull request #1594 from KhronosGroup/fix-1591
+
 
