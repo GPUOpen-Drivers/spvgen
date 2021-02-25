@@ -39,8 +39,6 @@ if("${XGL_LLPC_PATH}" STREQUAL "")
     set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc)
 endif()
 
-set(VULKAN_HEADER_PATH ${PROJECT_SOURCE_DIR}/../xgl/icd/api/include/khronos CACHE PATH "Specify the path to vulkan header files.")
-
 set(SPVGEN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
 
 add_definitions(-DVFX_INSIDE_SPVGEN=1)
@@ -91,7 +89,6 @@ include_directories(
 	external/llpc/include
 	${XGL_LLPC_INC_DIR}
 	${XGL_VFX_PATH}
-	${VULKAN_HEADER_PATH}
 )
 
 if(EXISTS ${XGL_VFX_PATH}/vfxVkSection.cpp)
@@ -118,4 +115,4 @@ else()
     )
 endif()
 
-target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c)
+target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_vulkan_interface)
