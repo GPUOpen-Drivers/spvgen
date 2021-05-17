@@ -115,4 +115,4 @@ else()
     )
 endif()
 
-target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_vulkan_interface)
+target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_spirv_interface khronos_vulkan_interface)
