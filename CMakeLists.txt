@@ -39,8 +39,6 @@ if("${XGL_LLPC_PATH}" STREQUAL "")
     set(XGL_LLPC_PATH ${PROJECT_SOURCE_DIR}/../llpc/llpc)
 endif()
 
-set(SPVGEN_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
-
 add_definitions(-DVFX_INSIDE_SPVGEN=1)
 
 add_definitions(-DNV_EXTENSIONS)

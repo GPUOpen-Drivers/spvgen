@@ -4,24 +4,34 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 3de5cfe5
-Date: 2021/1/6
-3de5cfe5 Merge pull request #2498 from dezinjob/fix-option-replacement-vs
+Commit: 9431c53c
+Date: 2021/5/7
+9431c53c Merge pull request #2632 from greg-lunarg/karl0
 
 [SPIRV-tools]
-Commit: 8383bd5d
-Date: 2021/1/18
-8383bd5d Migrate all Kokoro build scripts over to use the docker VM image (#4114)
+Commit: 1020e394
+Date: 2021/5/4
+1020e394 spirv-fuzz: Fix underflow problem in `fuzzer_pass_swap_two_functions` (#4253)
 
 [SPIRV-headers]
-Commit: f027d53 
-Date: 2020/11/27
-f027d53  Merge pull request #184 from dgkoch/dkoch_remove_hittkhr
+Commit: 85b7e00
+Date: 2021/4/29
+85b7e00  Merge pull request #206 from NikitaRudenkoIntel/sc
 
 
 [SPIRV-cross]
-Commit: 9acb9ec3
-Date: 2021/1/15
-9acb9ec3 Merge pull request #1594 from KhronosGroup/fix-1591
+Commit: 2e1b5fb3
+Date: 2021/6/3
+2e1b5fb3 Merge pull request #1686 from KhronosGroup/fix-1684
+
+
+
+
+
+
+
+
+
+
 
 
