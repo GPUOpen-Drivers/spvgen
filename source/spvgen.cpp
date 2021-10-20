@@ -1055,7 +1055,9 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         suffix = name.substr(ext + 1, std::string::npos);
     }
 
-    if (suffix == "vert")
+    if (suffix == "task")
+        return SpvGenStageTask;
+    else if (suffix == "vert")
         return SpvGenStageVertex;
     else if (suffix == "tesc")
         return SpvGenStageTessControl;
@@ -1063,6 +1065,8 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageTessEvaluation;
     else if (suffix == "geom")
         return SpvGenStageGeometry;
+    else if (suffix == "mesh")
+        return SpvGenStageMesh;
     else if (suffix == "frag")
         return SpvGenStageFragment;
     else if (suffix == "comp")
