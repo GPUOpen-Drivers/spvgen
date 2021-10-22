@@ -104,6 +104,7 @@ using namespace spv;
 #include "../external/glslang/StandAlone/DirStackFileIncluder.h"
 
 // Forward declarations
+EShLanguage SpvGenStageToEShLanguage(SpvGenStage stage);
 bool ReadFileData(const char* pFileName, std::string& data);
 int Vsnprintf(char* pOutput, size_t bufSize, const char* pFormat, va_list argList);
 int Snprintf(char* pOutput, size_t bufSize, const char* pFormat, ...);
@@ -772,10 +773,12 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
 {
     static const SpvGenStage stageTypes[SpvGenNativeStageCount] =
     {
+        SpvGenStageTask,
         SpvGenStageVertex,
         SpvGenStageTessControl,
         SpvGenStageTessEvaluation,
         SpvGenStageGeometry,
+        SpvGenStageMesh,
         SpvGenStageFragment,
         SpvGenStageCompute,
     };
@@ -824,7 +827,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
         {
             assert(shaderStageSources[i] != nullptr);
             assert(stageTypeList[i] < SpvGenStageCount);
-            EShLanguage stage = static_cast<EShLanguage>(stageTypeList[i]);
+            EShLanguage stage = SpvGenStageToEShLanguage(stageTypeList[i]);
 
             // Per-shader processing...
             glslang::TShader* pShader = new glslang::TShader(stage);
@@ -930,8 +933,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
             }
             else if (shaderStageSourceCounts[i + 1] > 0)
             {
-                EShLanguage nextStage = static_cast<EShLanguage>(stageTypeList[i + 1]);
-                if (stageMask & (1 << nextStage))
+                if (stageMask & (1 << stageTypeList[i + 1]))
                 {
                     doLink = true;
                 }
@@ -1055,7 +1057,9 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         suffix = name.substr(ext + 1, std::string::npos);
     }
 
-    if (suffix == "vert")
+    if (suffix == "task")
+        return SpvGenStageTask;
+    else if (suffix == "vert")
         return SpvGenStageVertex;
     else if (suffix == "tesc")
         return SpvGenStageTessControl;
@@ -1063,6 +1067,8 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageTessEvaluation;
     else if (suffix == "geom")
         return SpvGenStageGeometry;
+    else if (suffix == "mesh")
+        return SpvGenStageMesh;
     else if (suffix == "frag")
         return SpvGenStageFragment;
     else if (suffix == "comp")
@@ -1564,6 +1570,47 @@ int fopen_s(
 }
 
 #endif
+
+// =====================================================================================================================
+// Convert SpvGenStage enumerant to corresponding EShLanguage enumerant.
+EShLanguage SpvGenStageToEShLanguage(
+    SpvGenStage stage) // SpvGenStage enumerant
+{
+    switch (stage)
+    {
+    case SpvGenStageTask:
+        return EShLangTaskNV;
+    case SpvGenStageVertex:
+        return EShLangVertex;
+    case SpvGenStageTessControl:
+        return EShLangTessControl;
+    case SpvGenStageTessEvaluation:
+        return EShLangTessEvaluation;
+    case SpvGenStageGeometry:
+        return EShLangGeometry;
+    case SpvGenStageMesh:
+        return EShLangMeshNV;
+    case SpvGenStageFragment:
+        return EShLangFragment;
+    case SpvGenStageCompute:
+        return EShLangCompute;
+    case SpvGenStageRayTracingRayGen:
+        return EShLangRayGen;
+    case SpvGenStageRayTracingIntersect:
+        return EShLangIntersect;
+    case SpvGenStageRayTracingAnyHit:
+        return EShLangAnyHit;
+    case SpvGenStageRayTracingClosestHit:
+        return EShLangClosestHit;
+    case SpvGenStageRayTracingMiss:
+        return EShLangMiss;
+    case SpvGenStageRayTracingCallable:
+        return EShLangCallable;
+    }
+
+    assert(!"Unexpected SpvGenStage enumerant");
+    return EShLangCount;
+}
 
 // =====================================================================================================================
 // Malloc a string of sufficient size and read a string into it.
