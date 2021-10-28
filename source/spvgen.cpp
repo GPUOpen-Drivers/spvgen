@@ -1606,10 +1606,10 @@ EShLanguage SpvGenStageToEShLanguage(
         return EShLangMiss;
     case SpvGenStageRayTracingCallable:
         return EShLangCallable;
+    default:
+        assert(!"Unexpected SpvGenStage enumerant");
+        return EShLangCount;
     }
-
-    assert(!"Unexpected SpvGenStage enumerant");
-    return EShLangCount;
 }
 
 // =====================================================================================================================
