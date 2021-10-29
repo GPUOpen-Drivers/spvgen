@@ -37,9 +37,9 @@ SPVGEN is now built as part of the AMDVLK build system, but is not built by defa
 
 First, follow the AMDVLK instructions to get sources and use `cmake` to set up the build.
 
-Then, to build SPVGEN, from your `builds/Release64` or `builds/Debug64` directory, use
+Then, use
 ```
-(cd ../../../spvgen/external && python fetch_external_sources.py)
-make -j$(nproc) spvgen
+cd spvgen/external && python fetch_external_sources.py
+cd xgl && cmake --build {build directory} --target spvgen
 ```
 
