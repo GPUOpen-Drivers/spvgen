@@ -104,6 +104,7 @@ using namespace spv;
 #include "../external/glslang/StandAlone/DirStackFileIncluder.h"
 
 // Forward declarations
+EShLanguage SpvGenStageToEShLanguage(SpvGenStage stage);
 bool ReadFileData(const char* pFileName, std::string& data);
 int Vsnprintf(char* pOutput, size_t bufSize, const char* pFormat, va_list argList);
 int Snprintf(char* pOutput, size_t bufSize, const char* pFormat, ...);
@@ -772,10 +773,12 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgram(
 {
     static const SpvGenStage stageTypes[SpvGenNativeStageCount] =
     {
+        SpvGenStageTask,
         SpvGenStageVertex,
         SpvGenStageTessControl,
         SpvGenStageTessEvaluation,
         SpvGenStageGeometry,
+        SpvGenStageMesh,
         SpvGenStageFragment,
         SpvGenStageCompute,
     };
@@ -824,7 +827,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
         {
             assert(shaderStageSources[i] != nullptr);
             assert(stageTypeList[i] < SpvGenStageCount);
-            EShLanguage stage = static_cast<EShLanguage>(stageTypeList[i]);
+            EShLanguage stage = SpvGenStageToEShLanguage(stageTypeList[i]);
 
             // Per-shader processing...
             glslang::TShader* pShader = new glslang::TShader(stage);
@@ -930,8 +933,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
             }
             else if (shaderStageSourceCounts[i + 1] > 0)
             {
-                EShLanguage nextStage = static_cast<EShLanguage>(stageTypeList[i + 1]);
-                if (stageMask & (1 << nextStage))
+                if (stageMask & (1 << stageTypeList[i + 1]))
                 {
                     doLink = true;
                 }
@@ -1055,7 +1057,9 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         suffix = name.substr(ext + 1, std::string::npos);
     }
 
-    if (suffix == "vert")
+    if (suffix == "task")
+        return SpvGenStageTask;
+    else if (suffix == "vert")
         return SpvGenStageVertex;
     else if (suffix == "tesc")
         return SpvGenStageTessControl;
@@ -1063,6 +1067,8 @@ SpvGenStage SH_IMPORT_EXPORT spvGetStageTypeFromName(
         return SpvGenStageTessEvaluation;
     else if (suffix == "geom")
         return SpvGenStageGeometry;
+    else if (suffix == "mesh")
+        return SpvGenStageMesh;
     else if (suffix == "frag")
         return SpvGenStageFragment;
     else if (suffix == "comp")
@@ -1229,10 +1235,27 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
 //
 // NOTE: ppGlslSource should be freed by spvFreeBuffer
 bool SH_IMPORT_EXPORT spvCrossSpirv(
-    SpvSourceLanguage sourceLanguage,
-    unsigned int size,
-    const void* pSpvToken,
-    char** ppSourceString)
+    SpvSourceLanguage   sourceLanguage,
+    unsigned int        size,
+    const void*         pSpvToken,
+    char**              ppSourceString)
+{
+    return spvCrossSpirvEx(sourceLanguage, 0, size, pSpvToken, ppSourceString);
+}
+
+// =====================================================================================================================
+// convert SPIR-V binary token to other shader languages using Khronos SPIRV-Cross,
+//
+// NOTE: ppGlslSource should be freed by spvFreeBuffer
+// You need to calculate the version number of sourceLanguage; if version is set to 0, will use the default version (GLSL 450).
+// For HLSL, the default version is 30 (shader model 3); version = major * 10 + minor;
+// For MSL, the default version is 1.2; use make_msl_version to calculate the version number: version = (major * 10000) + (minor * 100) + patch;
+bool SH_IMPORT_EXPORT spvCrossSpirvEx(
+    SpvSourceLanguage   sourceLanguage,
+    uint32_t            version,
+    unsigned int        size,
+    const void*         pSpvToken,
+    char**              ppSourceString)
 {
     bool success = true;
     std::string sourceString = "";
@@ -1250,26 +1273,30 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             pCompiler.reset(new spirv_cross::CompilerMSL(std::move(spvParser.get_parsed_ir())));
             auto* pMslCompiler = static_cast<spirv_cross::CompilerMSL*>(pCompiler.get());
-            auto mslOptioins = pMslCompiler->get_msl_options();
-            mslOptioins.capture_output_to_buffer = false;
-            mslOptioins.swizzle_texture_samples = false;
-            mslOptioins.invariant_float_math = false;
-            mslOptioins.pad_fragment_output_components = false;
-            mslOptioins.tess_domain_origin_lower_left = false;
-            mslOptioins.argument_buffers = false;
-            mslOptioins.argument_buffers = false;
-            mslOptioins.texture_buffer_native = false;
-            mslOptioins.multiview = false;
-            mslOptioins.view_index_from_device_index = false;
-            mslOptioins.dispatch_base = false;
-            mslOptioins.enable_decoration_binding = false;
-            mslOptioins.force_active_argument_buffer_resources = false;
-            mslOptioins.force_native_arrays = false;
-            mslOptioins.enable_frag_depth_builtin = true;
-            mslOptioins.enable_frag_stencil_ref_builtin = true;
-            mslOptioins.enable_frag_output_mask = 0xffffffff;
-            mslOptioins.enable_clip_distance_user_varying = true;
-            pMslCompiler->set_msl_options(mslOptioins);
+            auto mslOptions = pMslCompiler->get_msl_options();
+            if (version != 0)
+            {
+                mslOptions.msl_version = version;
+            }
+            mslOptions.capture_output_to_buffer = false;
+            mslOptions.swizzle_texture_samples = false;
+            mslOptions.invariant_float_math = false;
+            mslOptions.pad_fragment_output_components = false;
+            mslOptions.tess_domain_origin_lower_left = false;
+            mslOptions.argument_buffers = false;
+            mslOptions.argument_buffers = false;
+            mslOptions.texture_buffer_native = false;
+            mslOptions.multiview = false;
+            mslOptions.view_index_from_device_index = false;
+            mslOptions.dispatch_base = false;
+            mslOptions.enable_decoration_binding = false;
+            mslOptions.force_active_argument_buffer_resources = false;
+            mslOptions.force_native_arrays = false;
+            mslOptions.enable_frag_depth_builtin = true;
+            mslOptions.enable_frag_stencil_ref_builtin = true;
+            mslOptions.enable_frag_output_mask = 0xffffffff;
+            mslOptions.enable_clip_distance_user_varying = true;
+            pMslCompiler->set_msl_options(mslOptions);
         }
         else if (sourceLanguage == SpvSourceLanguageHLSL)
         {
@@ -1293,6 +1320,10 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             commonOptions.es = true;
         }
+        if (version != 0)
+        {
+            commonOptions.version = version;
+        }
         commonOptions.force_temporary = false;
         commonOptions.separate_shader_objects = false;
         commonOptions.flatten_multidimensional_arrays = false;
@@ -1312,6 +1343,10 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             auto* pHlslCompiler = static_cast<spirv_cross::CompilerHLSL*>(pCompiler.get());
             auto hlslOptions = pHlslCompiler->get_hlsl_options();
+            if (version != 0)
+            {
+                hlslOptions.shader_model = version;
+            }
             hlslOptions.support_nonzero_base_vertex_base_instance = false;
             hlslOptions.force_storage_buffer_as_uav = false;
             hlslOptions.nonwritable_uav_texture_as_srv = false;
@@ -1564,6 +1599,47 @@ int fopen_s(
 }
 
 #endif
+
+// =====================================================================================================================
+// Convert SpvGenStage enumerant to corresponding EShLanguage enumerant.
+EShLanguage SpvGenStageToEShLanguage(
+    SpvGenStage stage) // SpvGenStage enumerant
+{
+    switch (stage)
+    {
+    case SpvGenStageTask:
+        return EShLangTaskNV;
+    case SpvGenStageVertex:
+        return EShLangVertex;
+    case SpvGenStageTessControl:
+        return EShLangTessControl;
+    case SpvGenStageTessEvaluation:
+        return EShLangTessEvaluation;
+    case SpvGenStageGeometry:
+        return EShLangGeometry;
+    case SpvGenStageMesh:
+        return EShLangMeshNV;
+    case SpvGenStageFragment:
+        return EShLangFragment;
+    case SpvGenStageCompute:
+        return EShLangCompute;
+    case SpvGenStageRayTracingRayGen:
+        return EShLangRayGen;
+    case SpvGenStageRayTracingIntersect:
+        return EShLangIntersect;
+    case SpvGenStageRayTracingAnyHit:
+        return EShLangAnyHit;
+    case SpvGenStageRayTracingClosestHit:
+        return EShLangClosestHit;
+    case SpvGenStageRayTracingMiss:
+        return EShLangMiss;
+    case SpvGenStageRayTracingCallable:
+        return EShLangCallable;
+    default:
+        assert(!"Unexpected SpvGenStage enumerant");
+        return EShLangCount;
+    }
+}
 
 // =====================================================================================================================
 // Malloc a string of sufficient size and read a string into it.
