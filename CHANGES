@@ -4,26 +4,25 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 9431c53c
-Date: 2021/5/7
-9431c53c Merge pull request #2632 from greg-lunarg/karl0
+Commit: b9ba4c57
+Date: 2021/10/7
+b9ba4c57  Merge pull request #2770 from ncesario-lunarg/ncesario-cmake-endif
 
 [SPIRV-tools]
-Commit: 1020e394
-Date: 2021/5/4
-1020e394 spirv-fuzz: Fix underflow problem in `fuzzer_pass_swap_two_functions` (#4253)
+Commit: 4578db3c
+Date: 2021/10/18
+4578db3c README: Update tested versions of compilers (#4579)
 
 [SPIRV-headers]
-Commit: 85b7e00
-Date: 2021/4/29
-85b7e00  Merge pull request #206 from NikitaRudenkoIntel/sc
+Commit: 19e8350
+Date: 2021/10/8
+19e8350  Merge pull request #245 from pmistryNV/nonconstoffset
 
 
 [SPIRV-cross]
-Commit: 2e1b5fb3
-Date: 2021/6/3
-2e1b5fb3 Merge pull request #1686 from KhronosGroup/fix-1684
-
+Commit: e4243b89
+Date: 2021/10/13
+e4243b89  Merge pull request #1766 from KhronosGroup/fix-1765
 
 
 

@@ -1235,10 +1235,27 @@ bool SH_IMPORT_EXPORT spvDisassembleSpirv(
 //
 // NOTE: ppGlslSource should be freed by spvFreeBuffer
 bool SH_IMPORT_EXPORT spvCrossSpirv(
-    SpvSourceLanguage sourceLanguage,
-    unsigned int size,
-    const void* pSpvToken,
-    char** ppSourceString)
+    SpvSourceLanguage   sourceLanguage,
+    unsigned int        size,
+    const void*         pSpvToken,
+    char**              ppSourceString)
+{
+    return spvCrossSpirvEx(sourceLanguage, 0, size, pSpvToken, ppSourceString);
+}
+
+// =====================================================================================================================
+// convert SPIR-V binary token to other shader languages using Khronos SPIRV-Cross,
+//
+// NOTE: ppGlslSource should be freed by spvFreeBuffer
+// You need to calculate the version number of sourceLanguage; if version is set to 0, will use the default version (GLSL 450).
+// For HLSL, the default version is 30 (shader model 3); version = major * 10 + minor;
+// For MSL, the default version is 1.2; use make_msl_version to calculate the version number: version = (major * 10000) + (minor * 100) + patch;
+bool SH_IMPORT_EXPORT spvCrossSpirvEx(
+    SpvSourceLanguage   sourceLanguage,
+    uint32_t            version,
+    unsigned int        size,
+    const void*         pSpvToken,
+    char**              ppSourceString)
 {
     bool success = true;
     std::string sourceString = "";
@@ -1256,26 +1273,30 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             pCompiler.reset(new spirv_cross::CompilerMSL(std::move(spvParser.get_parsed_ir())));
             auto* pMslCompiler = static_cast<spirv_cross::CompilerMSL*>(pCompiler.get());
-            auto mslOptioins = pMslCompiler->get_msl_options();
-            mslOptioins.capture_output_to_buffer = false;
-            mslOptioins.swizzle_texture_samples = false;
-            mslOptioins.invariant_float_math = false;
-            mslOptioins.pad_fragment_output_components = false;
-            mslOptioins.tess_domain_origin_lower_left = false;
-            mslOptioins.argument_buffers = false;
-            mslOptioins.argument_buffers = false;
-            mslOptioins.texture_buffer_native = false;
-            mslOptioins.multiview = false;
-            mslOptioins.view_index_from_device_index = false;
-            mslOptioins.dispatch_base = false;
-            mslOptioins.enable_decoration_binding = false;
-            mslOptioins.force_active_argument_buffer_resources = false;
-            mslOptioins.force_native_arrays = false;
-            mslOptioins.enable_frag_depth_builtin = true;
-            mslOptioins.enable_frag_stencil_ref_builtin = true;
-            mslOptioins.enable_frag_output_mask = 0xffffffff;
-            mslOptioins.enable_clip_distance_user_varying = true;
-            pMslCompiler->set_msl_options(mslOptioins);
+            auto mslOptions = pMslCompiler->get_msl_options();
+            if (version != 0)
+            {
+                mslOptions.msl_version = version;
+            }
+            mslOptions.capture_output_to_buffer = false;
+            mslOptions.swizzle_texture_samples = false;
+            mslOptions.invariant_float_math = false;
+            mslOptions.pad_fragment_output_components = false;
+            mslOptions.tess_domain_origin_lower_left = false;
+            mslOptions.argument_buffers = false;
+            mslOptions.argument_buffers = false;
+            mslOptions.texture_buffer_native = false;
+            mslOptions.multiview = false;
+            mslOptions.view_index_from_device_index = false;
+            mslOptions.dispatch_base = false;
+            mslOptions.enable_decoration_binding = false;
+            mslOptions.force_active_argument_buffer_resources = false;
+            mslOptions.force_native_arrays = false;
+            mslOptions.enable_frag_depth_builtin = true;
+            mslOptions.enable_frag_stencil_ref_builtin = true;
+            mslOptions.enable_frag_output_mask = 0xffffffff;
+            mslOptions.enable_clip_distance_user_varying = true;
+            pMslCompiler->set_msl_options(mslOptions);
         }
         else if (sourceLanguage == SpvSourceLanguageHLSL)
         {
@@ -1299,6 +1320,10 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             commonOptions.es = true;
         }
+        if (version != 0)
+        {
+            commonOptions.version = version;
+        }
         commonOptions.force_temporary = false;
         commonOptions.separate_shader_objects = false;
         commonOptions.flatten_multidimensional_arrays = false;
@@ -1318,6 +1343,10 @@ bool SH_IMPORT_EXPORT spvCrossSpirv(
         {
             auto* pHlslCompiler = static_cast<spirv_cross::CompilerHLSL*>(pCompiler.get());
             auto hlslOptions = pHlslCompiler->get_hlsl_options();
+            if (version != 0)
+            {
+                hlslOptions.shader_model = version;
+            }
             hlslOptions.support_nonzero_base_vertex_base_instance = false;
             hlslOptions.force_storage_buffer_as_uav = false;
             hlslOptions.nonwritable_uav_texture_as_srv = false;
