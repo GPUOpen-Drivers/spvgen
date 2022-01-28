@@ -1747,6 +1747,41 @@ spv_result_t spvDiagnosticPrint(const spv_diagnostic diagnostic, char* pBuffer, 
 }
 
 // =====================================================================================================================
+// Internal initilization
+static void internalInit()
+{
+    static bool init = false;
+    if (!init) {
+        ProcessConfigFile();
+        glslang::InitializeProcess();
+        spv::Parameterize();
+        init = true;
+    }
+}
+
+// =====================================================================================================================
+// Cleanup
+static void internalFinal()
+{
+    glslang::FinalizeProcess();
+}
+
+// =====================================================================================================================
+// Initilize the static library
+bool InitSpvGen(const char* pSpvGenDir)
+{
+    internalInit();
+    return true;
+}
+
+// =====================================================================================================================
+// Finalize the static library
+void FinalizeSpvgen()
+{
+    internalFinal();
+}
+
+// =====================================================================================================================
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <windows.h>
@@ -1758,16 +1793,14 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        ProcessConfigFile();
-        glslang::InitializeProcess();
-        spv::Parameterize();
+        internalInit();
         break;
     case DLL_THREAD_ATTACH:
         break;
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        glslang::FinalizeProcess();
+        internalFinal();
         break;
     }
     return TRUE;
