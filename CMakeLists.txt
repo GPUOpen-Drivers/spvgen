@@ -50,16 +50,27 @@ add_definitions(-DENABLE_HLSL)
 # These two directories only exist after the user does "cd external && python fetch_external_sources.py".
 # You cannot build spvgen without them, but we do not want the cmake stage to fail when they are not
 # present, as spvgen is not built as part of the "all" target.
-if(EXISTS ${PROJECT_SOURCE_DIR}/external/glslang/CMakeLists.txt)
+if(EXISTS ${PROJECT_SOURCE_DIR}/../glslang/CMakeLists.txt)
+    add_subdirectory(../glslang  external/glslang)
+elseif(EXISTS ${PROJECT_SOURCE_DIR}/external/glslang/CMakeLists.txt)
     add_subdirectory(external/glslang)
 endif()
-if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-tools/CMakeLists.txt)
+if(EXISTS ${PROJECT_SOURCE_DIR}/../SPIRV-tools/CMakeLists.txt)
+    set(SPIRV_WERROR ${SPVGEN_ENABLE_WERROR} CACHE BOOL "${PROJECT_NAME} override." FORCE)
+    add_subdirectory(../SPIRV-tools  external/SPIRV-tools)
+elseif(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-tools/CMakeLists.txt)
     set(SPIRV_WERROR ${SPVGEN_ENABLE_WERROR} CACHE BOOL "${PROJECT_NAME} override." FORCE)
     add_subdirectory(external/SPIRV-tools)
 endif()
-if(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-cross/CMakeLists.txt)
+if(EXISTS ${PROJECT_SOURCE_DIR}/../SPIRV-cross/CMakeLists.txt)
+    add_subdirectory(../SPIRV-cross  external/SPIRV-cross)
+elseif(EXISTS ${PROJECT_SOURCE_DIR}/external/SPIRV-cross/CMakeLists.txt)
     add_subdirectory(external/SPIRV-cross)
 endif()
+
+add_library(spvgen SHARED "")
+
+set_target_properties(spvgen PROPERTIES PREFIX "")
 
 # vkgcDefs.h is included in llpc/tool/vfx/vfx.h
 # llpc.h is included in llpc/llpc/tool/vfx/vfx.h
@@ -88,7 +99,7 @@ include_directories(
 if(EXISTS ${XGL_VFX_PATH}/vfxVkSection.cpp)
     add_definitions(-DVFX_SUPPORT_VK_PIPELINE=1)
     add_definitions(-DVFX_SUPPORT_RENDER_DOCOUMENT=1)
-    set(SPVGEN_SOURCE_FILES
+    target_sources(spvgen PRIVATE
         source/spvgen.cpp
         ${XGL_VFX_PATH}/vfxParser.cpp
         ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
@@ -99,7 +110,7 @@ if(EXISTS ${XGL_VFX_PATH}/vfxVkSection.cpp)
         ${XGL_VFX_PATH}/vfxRenderSection.cpp
     )
 else()
-    set(SPVGEN_SOURCE_FILES
+    target_sources(spvgen PRIVATE
         source/spvgen.cpp
         ${XGL_VFX_PATH}/vfxParser.cpp
         ${XGL_VFX_PATH}/vfxPipelineDoc.cpp
@@ -109,22 +120,4 @@ else()
     )
 endif()
 
-# Build object library
-add_library(spvgen_base OBJECT ${SPVGEN_SOURCE_FILES})
-target_link_libraries(spvgen_base glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_spirv_interface khronos_vulkan_interface)
-
-# Touch an empty source file
-set(EMPTY_SOURCE_FILES ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
-add_custom_command(
-    OUTPUT  ${EMPTY_SOURCE_FILES}
-    COMMAND ${CMAKE_COMMAND} -E touch ${EMPTY_SOURCE_FILES}
-    COMMENT "Touching ${EMPTY_SOURCE_FILES}"
-)
-
-# Build static library
-add_library(spvgen_static STATIC ${EMPTY_SOURCE_FILES})
-target_link_libraries(spvgen_static spvgen_base)
-
-# Build shared library
-add_library(spvgen SHARED ${EMPTY_SOURCE_FILES})
-target_link_libraries(spvgen spvgen_base)
+target_link_libraries(spvgen glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_spirv_interface khronos_vulkan_interface)

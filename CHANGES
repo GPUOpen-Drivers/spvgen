@@ -4,25 +4,30 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: b9ba4c57
-Date: 2021/10/7
-b9ba4c57  Merge pull request #2770 from ncesario-lunarg/ncesario-cmake-endif
+Commit: 6624e136
+Date: 2022/1/13
+6624e136 Merge pull request #2852 from gnoliyil/fuchsia
+
 
 [SPIRV-tools]
-Commit: 4578db3c
-Date: 2021/10/18
-4578db3c README: Update tested versions of compilers (#4579)
+Commit: 8a40f6de
+Date: 2022/1/13
+8a40f6de Add SPIR-V 1.6 support to wasm build (#4674)
 
 [SPIRV-headers]
-Commit: 19e8350
-Date: 2021/10/8
-19e8350  Merge pull request #245 from pmistryNV/nonconstoffset
+Commit: b8047fbe
+Date: 2022/1/4
+b8047fbe  Merge pull request #253 from DragonJoker/add_shader_writer
 
 
 [SPIRV-cross]
-Commit: e4243b89
-Date: 2021/10/13
-e4243b89  Merge pull request #1766 from KhronosGroup/fix-1765
+Commit: a1bb29cc
+Date: 2022/1/14
+a1bb29cc Merge pull request #1845 from KhronosGroup/pr-1842-fix
+
+
+
+
 
 
 
