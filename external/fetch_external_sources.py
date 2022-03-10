@@ -84,10 +84,10 @@ class GitRepo:
         os.system("git checkout " + self.revision);
 
 PACKAGES = [
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git", "spirv-tools", "72524db", "SPIRV-tools"),
-    GitRepo("https://github.com/KhronosGroup/glslang.git", "glslang", "46e0731", "glslang"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "3a4dbdd", "SPIRV-tools/external/SPIRV-Headers"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git", "spirv-cross", "6575e451", "SPIRV-cross"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git", "spirv-tools", "8a40f6de", "SPIRV-tools"),
+    GitRepo("https://github.com/KhronosGroup/glslang.git", "glslang", "6624e136", "glslang"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "b8047fbe", "SPIRV-tools/external/SPIRV-Headers"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git", "spirv-cross", "a1bb29cc", "SPIRV-cross"),
 ]
 
 def GetOpt():
