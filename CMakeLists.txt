@@ -135,3 +135,4 @@ target_link_libraries(spvgen_static spvgen_base)
 # Build shared library
 add_library(spvgen SHARED ${EMPTY_SOURCE_FILES})
 target_link_libraries(spvgen spvgen_base)
+set_target_properties(spvgen PROPERTIES PREFIX "")
