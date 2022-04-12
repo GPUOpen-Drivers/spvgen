@@ -1778,7 +1778,6 @@ static void internalFinal()
 // Initilize the static library
 bool InitSpvGen(const char* pSpvGenDir)
 {
-    internalInit();
     return true;
 }
 
@@ -1786,7 +1785,6 @@ bool InitSpvGen(const char* pSpvGenDir)
 // Finalize the static library
 void FinalizeSpvgen()
 {
-    internalFinal();
 }
 
 // =====================================================================================================================
