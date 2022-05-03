@@ -72,25 +72,11 @@ endif()
 # llpc.h is included in llpc/llpc/tool/vfx/vfx.h
 if(EXISTS ${XGL_VKGC_PATH}/tool/vfx/vfx.h)
     set(XGL_VFX_PATH ${XGL_VKGC_PATH}/tool/vfx)
-    set(XGL_LLPC_INC_DIR ${XGL_VKGC_PATH}/include)
 elseif(EXISTS ${XGL_LLPC_PATH}/../tool/vfx/vfx.h)
     set(XGL_VFX_PATH ${XGL_LLPC_PATH}/../tool/vfx)
-    set(XGL_LLPC_INC_DIR ${XGL_LLPC_PATH}/../include)
 else()
     set(XGL_VFX_PATH ${XGL_LLPC_PATH}/tool/vfx)
-    set(XGL_LLPC_INC_DIR ${XGL_LLPC_PATH}/include)
 endif()
-
-include_directories(
-	include
-	external/glslang
-	external/glslang/SPIRV
-	external/SPIRV-tools/include
-	external/SPIRV-cross
-	external/llpc/include
-	${XGL_LLPC_INC_DIR}
-	${XGL_VFX_PATH}
-)
 
 if(EXISTS ${XGL_VFX_PATH}/vfxVkSection.cpp)
     add_definitions(-DVFX_SUPPORT_VK_PIPELINE=1)
@@ -118,7 +104,20 @@ endif()
 
 # Build object library
 add_library(spvgen_base OBJECT ${SPVGEN_SOURCE_FILES})
-target_link_libraries(spvgen_base glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_spirv_interface khronos_vulkan_interface)
+
+target_include_directories(spvgen_base
+PUBLIC
+    include
+PRIVATE
+    external/glslang
+    external/glslang/SPIRV
+    external/SPIRV-tools/include
+    external/SPIRV-cross
+    external/llpc/include
+    ${XGL_VFX_PATH}
+)
+
+target_link_libraries(spvgen_base glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c khronos_spirv_interface khronos_vulkan_interface vkgc_headers)
 
 # Touch an empty source file
 set(EMPTY_SOURCE_FILES ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
