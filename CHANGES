@@ -4,26 +4,24 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 6624e136
-Date: 2022/1/13
-6624e136 Merge pull request #2852 from gnoliyil/fuchsia
-
+Commit: 6d937739
+Date: 2022/3/23
+6d937739 Merge pull request #2906 from apanteleev/escape-deps
 
 [SPIRV-tools]
-Commit: 8a40f6de
-Date: 2022/1/13
-8a40f6de Add SPIR-V 1.6 support to wasm build (#4674)
+Commit: b3c17906
+Date: 2022/3/23
+b3c17906 spirv-val: Add Vulkan 32-bit bit op Base (#4758)
 
 [SPIRV-headers]
-Commit: b8047fbe
-Date: 2022/1/4
-b8047fbe  Merge pull request #253 from DragonJoker/add_shader_writer
-
+Commit: 4995a2f2
+Date: 2022/3/15
+4995a2f2 Merge pull request #269 from KornevNikita/uniform_group_instructions
 
 [SPIRV-cross]
-Commit: a1bb29cc
-Date: 2022/1/14
-a1bb29cc Merge pull request #1845 from KhronosGroup/pr-1842-fix
+Commit: 44691aa97
+Date: 2022/3/23
+44691aa97 Merge pull request #1899 from billhollings/forward-volatile-vars-except-builtins
 
 
 
