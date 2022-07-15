@@ -70,6 +70,7 @@
 #include "glslang/Include/ShHandle.h"
 #include "glslang/Public/ShaderLang.h"
 #include "glslang/build_info.h"
+#include "StandAlone/DirStackFileIncluder.h"
 #include "SPIRV/GlslangToSpv.h"
 
 #include "spirv-tools/libspirv.h"
@@ -100,8 +101,6 @@ using namespace spv;
 #include <stdarg.h>
 
 #include "spvgen.h"
-#include "vfx.h"
-#include "../external/glslang/StandAlone/DirStackFileIncluder.h"
 
 // Forward declarations
 EShLanguage SpvGenStageToEShLanguage(SpvGenStage stage);
@@ -1137,12 +1136,6 @@ bool SH_IMPORT_EXPORT spvGetVersion(
             *pReversion = SPVGEN_REVISION;
             break;
         }
-    case SpvGenVersionVfx:
-        {
-            *pVersion = VFX_VERSION;
-            *pReversion = VFX_REVISION;
-            break;
-        }
     default:
         {
             result = false;
@@ -1534,49 +1527,6 @@ void SH_IMPORT_EXPORT spvFreeBuffer(
     void* pBuffer)
 {
     free(pBuffer);
-}
-
-// =====================================================================================================================
-// Export stubs for VFX functions.
-bool SH_IMPORT_EXPORT vfxParseFile(
-    const char*  pFilename,
-    unsigned int numMacro,
-    const char*  pMacros[],
-    VfxDocType   type,
-    void**       ppDoc,
-    const char** ppErrorMsg)
-{
-    return Vfx::vfxParseFile(pFilename, numMacro, pMacros, type, ppDoc, ppErrorMsg);
-}
-
-// =====================================================================================================================
-void SH_IMPORT_EXPORT vfxCloseDoc(
-    void* pDoc)
-{
-    Vfx::vfxCloseDoc(pDoc);
-}
-
-// =====================================================================================================================
-void SH_IMPORT_EXPORT vfxGetRenderDoc(
-    void*              pDoc,
-    VfxRenderStatePtr* pRenderState)
-{
-    Vfx::vfxGetRenderDoc(pDoc, pRenderState);
-}
-
-// =====================================================================================================================
-void SH_IMPORT_EXPORT vfxGetPipelineDoc(
-    void*                pDoc,
-    VfxPipelineStatePtr* pPipelineState)
-{
-    Vfx::vfxGetPipelineDoc(pDoc, pPipelineState);
-}
-
-// =====================================================================================================================
-void SH_IMPORT_EXPORT vfxPrintDoc(
-    void*                pDoc)
-{
-    Vfx::vfxPrintDoc(pDoc);
 }
 
 #if !defined _MSC_VER && !defined MINGW_HAS_SECURE_API

@@ -54,8 +54,6 @@
     #endif
 #endif
 
-#include "vfx.h"
-
 enum SpvGenVersion : uint32_t
 {
     SpvGenVersionGlslang,
@@ -63,7 +61,6 @@ enum SpvGenVersion : uint32_t
     SpvGenVersionStd450,
     SpvGenVersionExtAmd,
     SpvGenVersionSpvGen,
-    SpvGenVersionVfx,
     SpvGenVersionCount,
 };
 
@@ -214,28 +211,6 @@ bool SH_IMPORT_EXPORT spvGetVersion(
     unsigned int* pVersion,
     unsigned int* pReversion);
 
-bool SH_IMPORT_EXPORT vfxParseFile(
-    const char*  pFilename,
-    unsigned int numMacro,
-    const char*  pMacros[],
-    VfxDocType   type,
-    void**       ppDoc,
-    const char** ppErrorMsg);
-
-void SH_IMPORT_EXPORT vfxCloseDoc(
-    void* pDoc);
-
-void SH_IMPORT_EXPORT vfxGetRenderDoc(
-    void*              pDoc,
-    VfxRenderStatePtr* pRenderState);
-
-void SH_IMPORT_EXPORT vfxGetPipelineDoc(
-    void*                pDoc,
-    VfxPipelineStatePtr* pPipelineState);
-
-void SH_IMPORT_EXPORT vfxPrintDoc(
-    void*                pDoc);
-
 #ifdef __cplusplus
 }
 #endif
@@ -339,28 +314,6 @@ typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_spvGetVersion)(
      unsigned int* pVersion,
      unsigned int* pReversion);
 
-typedef bool SH_IMPORT_EXPORT (SPVAPI* PFN_vfxParseFile)(
-    const char*  pFilename,
-    unsigned int numMacro,
-    const char*  pMacros[],
-    VfxDocType   type,
-    void**       ppDoc,
-    const char** ppErrorMsg);
-
-typedef void SH_IMPORT_EXPORT (SPVAPI* PFN_vfxCloseDoc)(
-    void* pDoc);
-
-typedef void SH_IMPORT_EXPORT (SPVAPI* PFN_vfxGetRenderDoc)(
-    void*              pDoc,
-    VfxRenderStatePtr* pRenderState);
-
-typedef void SH_IMPORT_EXPORT (SPVAPI* PFN_vfxGetPipelineDoc)(
-    void*                pDoc,
-    VfxPipelineStatePtr* pPipelineState);
-
-typedef void SH_IMPORT_EXPORT (SPVAPI* PFN_vfxPrintDoc)(
-    void*                pDoc);
-
 // =====================================================================================================================
 // SPIR-V generator entry-points
 #define DECL_EXPORT_FUNC(func) \
@@ -381,11 +334,6 @@ DECL_EXPORT_FUNC(spvValidateSpirv);
 DECL_EXPORT_FUNC(spvOptimizeSpirv);
 DECL_EXPORT_FUNC(spvFreeBuffer);
 DECL_EXPORT_FUNC(spvGetVersion);
-DECL_EXPORT_FUNC(vfxParseFile);
-DECL_EXPORT_FUNC(vfxCloseDoc);
-DECL_EXPORT_FUNC(vfxGetRenderDoc);
-DECL_EXPORT_FUNC(vfxGetPipelineDoc);
-DECL_EXPORT_FUNC(vfxPrintDoc);
 
 bool SPVAPI InitSpvGen(const char* pSpvGenDir = nullptr);
 
@@ -413,11 +361,6 @@ DEFI_EXPORT_FUNC(spvValidateSpirv);
 DEFI_EXPORT_FUNC(spvOptimizeSpirv);
 DEFI_EXPORT_FUNC(spvFreeBuffer);
 DEFI_EXPORT_FUNC(spvGetVersion);
-DEFI_EXPORT_FUNC(vfxParseFile);
-DEFI_EXPORT_FUNC(vfxCloseDoc);
-DEFI_EXPORT_FUNC(vfxGetRenderDoc);
-DEFI_EXPORT_FUNC(vfxGetPipelineDoc);
-DEFI_EXPORT_FUNC(vfxPrintDoc);
 
 // SPIR-V generator Windows implementation
 #ifdef _WIN32
@@ -505,11 +448,6 @@ bool SPVAPI InitSpvGen(
         INITFUNC(spvOptimizeSpirv);
         INITFUNC(spvFreeBuffer);
         INITFUNC(spvGetVersion);
-        INITFUNC(vfxParseFile);
-        INITFUNC(vfxCloseDoc);
-        INIT_OPT_FUNC(vfxGetRenderDoc);
-        INIT_OPT_FUNC(vfxGetPipelineDoc);
-        INITFUNC(vfxPrintDoc);
     }
     else
     {
@@ -544,11 +482,6 @@ bool SPVAPI InitSpvGen(
         DEINITFUNC(spvOptimizeSpirv);
         DEINITFUNC(spvFreeBuffer);
         DEINITFUNC(spvGetVersion);
-        DEINITFUNC(vfxParseFile);
-        DEINITFUNC(vfxCloseDoc);
-        DEINITFUNC(vfxGetRenderDoc);
-        DEINITFUNC(vfxGetPipelineDoc);
-        DEINITFUNC(vfxPrintDoc);
     }
     return success;
 }
@@ -576,43 +509,6 @@ void SPVAPI FinalizeSpvgen() {}
 #define spvOptimizeSpirv                    g_pfnspvOptimizeSpirv
 #define spvFreeBuffer                       g_pfnspvFreeBuffer
 #define spvGetVersion                       g_pfnspvGetVersion
-
-static inline bool vfxParseFile(
-    const char*  pFilename,
-    unsigned int numMacro,
-    const char*  pMacros[],
-    VfxDocType   type,
-    void**       ppDoc,
-    const char** ppErrorMsg)
-{
-    return (*g_pfnvfxParseFile)(pFilename, numMacro, pMacros, type, ppDoc, ppErrorMsg);
-}
-
-static inline void vfxCloseDoc(
-    void* pDoc)
-{
-    (*g_pfnvfxCloseDoc)(pDoc);
-}
-
-static inline void vfxGetRenderDoc(
-    void*              pDoc,
-    VfxRenderStatePtr* pRenderState)
-{
-    (*g_pfnvfxGetRenderDoc)(pDoc, pRenderState);
-}
-
-static inline void vfxGetPipelineDoc(
-    void*                pDoc,
-    VfxPipelineStatePtr* pPipelineState)
-{
-    (*g_pfnvfxGetPipelineDoc)(pDoc, pPipelineState);
-}
-
-static inline void vfxPrintDoc(
-    void*                pDoc)
-{
-    (*g_pfnvfxPrintDoc)(pDoc);
-}
 
 #endif
 

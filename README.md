@@ -3,7 +3,7 @@
 SPVGEN is a library to generate SPIR-V binary. It integrates [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).
 
 ## APIs
-The APIs are listed in include/spvgen.h and vfx.h.
+The APIs are listed in include/spvgen.h.
 
 #### Initialization
 * InitSpvGen()
@@ -25,11 +25,6 @@ The APIs are listed in include/spvgen.h and vfx.h.
 
 #### Validate SPIR-V
 * spvValidateSpirv()
-
-#### Parse .pipe file
-* vfxParseFile()
-* vfxGetPipelineDoc()
-* vfxCloseDoc()
 
 ## How to build
 
