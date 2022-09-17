@@ -106,7 +106,7 @@ def GetOpt():
         print("The source code is downloaded to %s" % (options.targetdir));
         TargetDir = options.targetdir;
     else:
-        print("The target directroy is not specified, using default: " + TargetDir);
+        print("The target directory is not specified, using default: " + TargetDir);
 
 def DownloadSourceCode():
     global TargetDir;
