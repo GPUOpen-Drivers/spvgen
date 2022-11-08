@@ -4,24 +4,24 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: a53aa3e9
-Date: 2022/9/2
-a53aa3e9 Merge pull request #3014 from pmistryNV/GL_EXT_mesh_shader
+Commit: 980ac508
+Date: 2022/10/19
+980ac508 Merge pull request #3047 from akien-mga/spirv.hpp-dos2unix
 
 [SPIRV-tools]
-Commit: 5f45f793
-Date: 2022/9/2
-5f45f793 Support building on OpenBSD (#4912)
+Commit: eb113f0f
+Date: 2022/10/20
+eb113f0f spirv-val: Improve PR 4831 error message (#4968)
 
 [SPIRV-headers]
-Commit: 87d5b782
-Date: 2022/9/1
-87d5b782  Merge pull request #288 from pmistryNV/GL_EXT_mesh_shader_github
+Commit: 85a1ed20
+Date: 2022/10/5
+85a1ed20  Merge pull request #294 from kpet/clspv-texel-buffer
 
 [SPIRV-cross]
-Commit: 210a8001
-Date: 2022/9/5
-210a8001 Merge pull request #2012 from KhronosGroup/mesh-shaders
+Commit: 57639196
+Date: 2022/10/19
+57639196 Merge pull request #2039 from cdavis5e/raw-buffer-tess-input
 
 
 

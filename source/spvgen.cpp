@@ -202,6 +202,16 @@ const char* DefaultConfig =
     "MaxCullDistances 8\n"
     "MaxCombinedClipAndCullDistances 8\n"
     "MaxSamples 4\n"
+    "MaxMeshOutputVerticesEXT 256\n"
+    "MaxMeshOutputPrimitivesEXT 256\n"
+    "MaxMeshWorkGroupSizeX_EXT 128\n"
+    "MaxMeshWorkGroupSizeY_EXT 128\n"
+    "MaxMeshWorkGroupSizeZ_EXT 128\n"
+    "MaxTaskWorkGroupSizeX_EXT 128\n"
+    "MaxTaskWorkGroupSizeY_EXT 128\n"
+    "MaxTaskWorkGroupSizeZ_EXT 128\n"
+    "MaxMeshViewCountEXT 4\n"
+    "MaxDualSourceDrawBuffersEXT 1\n"
 
     "nonInductiveForLoops 1\n"
     "whileLoops 1\n"
@@ -420,6 +430,26 @@ void ProcessConfigFile()
             Resources.maxCombinedClipAndCullDistances = value;
         else if (strcmp(token, "MaxSamples") == 0)
             Resources.maxSamples = value;
+        else if (strcmp(token, "MaxMeshOutputVerticesEXT") == 0)
+            Resources.maxMeshOutputVerticesEXT = value;
+        else if (strcmp(token, "MaxMeshOutputPrimitivesEXT") == 0)
+            Resources.maxMeshOutputPrimitivesEXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeX_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeX_EXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeY_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeY_EXT = value;
+        else if (strcmp(token, "MaxMeshWorkGroupSizeZ_EXT") == 0)
+            Resources.maxMeshWorkGroupSizeZ_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeX_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeX_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeY_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeY_EXT = value;
+        else if (strcmp(token, "MaxTaskWorkGroupSizeZ_EXT") == 0)
+            Resources.maxTaskWorkGroupSizeZ_EXT = value;
+        else if (strcmp(token, "MaxMeshViewCountEXT") == 0)
+            Resources.maxMeshViewCountEXT = value;
+        else if (strcmp(token, "MaxDualSourceDrawBuffersEXT") == 0)
+            Resources.maxDualSourceDrawBuffersEXT = value;
 
         else if (strcmp(token, "nonInductiveForLoops") == 0)
             Resources.limits.nonInductiveForLoops = (value != 0);
@@ -923,7 +953,7 @@ bool SH_IMPORT_EXPORT spvCompileAndLinkProgramEx(
                 if ((strlen(pInfoLog) > 0) || (strlen(pDebugLog) > 0))
                 {
                     char buffer[256];
-                    sprintf(buffer, "Compiling %s stage:\n", glslang::StageName((EShLanguage)i));
+                    sprintf(buffer, "Compiling %s stage:\n", glslang::StageName(stage));
                     pProgram->AddLog(buffer);
                     pProgram->AddLog(pShader->getInfoLog());
                     pProgram->AddLog(pShader->getInfoDebugLog());
@@ -1566,7 +1596,7 @@ EShLanguage SpvGenStageToEShLanguage(
     switch (stage)
     {
     case SpvGenStageTask:
-        return EShLangTaskNV;
+        return EShLangTask;
     case SpvGenStageVertex:
         return EShLangVertex;
     case SpvGenStageTessControl:
@@ -1576,7 +1606,7 @@ EShLanguage SpvGenStageToEShLanguage(
     case SpvGenStageGeometry:
         return EShLangGeometry;
     case SpvGenStageMesh:
-        return EShLangMeshNV;
+        return EShLangMesh;
     case SpvGenStageFragment:
         return EShLangFragment;
     case SpvGenStageCompute:

@@ -28,13 +28,13 @@ The APIs are listed in include/spvgen.h.
 
 ## How to build
 
-SPVGEN is now built as part of the AMDVLK build system, but is not built by default.
-
-First, follow the AMDVLK instructions to get sources and use `cmake` to set up the build.
-
-Then, use
+SPVGEN is now built into amdllpc statically by default. If you want to build a standalone one, follow the steps below:
+1. ```cd spvgen/external && python fetch_external_sources.py```
+2. Use cmake to build.
 ```
-cd spvgen/external && python fetch_external_sources.py
-cd xgl && cmake --build {build directory} --target spvgen
+cd spvgen
+mkdir build
+cd build
+cmake ..
+make -j8
 ```
-
