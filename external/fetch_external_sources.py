@@ -77,8 +77,7 @@ class GitRepo:
             os.system("git clone " + self.httpsUrl + " " + fullDstPath);
 
         os.chdir(fullDstPath);
-        os.system("git checkout master");
-        os.system("git pull");
+        os.system("git fetch");
         os.system("git checkout " + self.revision);
 
 PACKAGES = [
