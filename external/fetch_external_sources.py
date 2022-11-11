@@ -75,19 +75,16 @@ class GitRepo:
         fullDstPath = os.path.join(TargetDir, self.extractDir)
         if not os.path.exists(fullDstPath):
             os.system("git clone " + self.httpsUrl + " " + fullDstPath);
-        else:
-            print("Warning: " + fullDstPath + " exist already, will not download from github again")
-            return;
 
         os.chdir(fullDstPath);
-        os.system("git pull");
+        os.system("git fetch");
         os.system("git checkout " + self.revision);
 
 PACKAGES = [
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git", "spirv-tools", "8a40f6de", "SPIRV-tools"),
-    GitRepo("https://github.com/KhronosGroup/glslang.git", "glslang", "6624e136", "glslang"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "b8047fbe", "SPIRV-tools/external/SPIRV-Headers"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git", "spirv-cross", "a1bb29cc", "SPIRV-cross"),
+    GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "980ac508", "glslang"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",   "spirv-tools",   "eb113f0f", "SPIRV-tools"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "85a1ed20", "SPIRV-tools/external/SPIRV-Headers"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",   "spirv-cross",   "57639196", "SPIRV-cross"),
 ]
 
 def GetOpt():
