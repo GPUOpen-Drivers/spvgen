@@ -1,6 +1,6 @@
 # SPVGEN
 
-SPVGEN is a library to generate SPIR-V binary. It integrates [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).
+SPVGEN is a library to generate SPIR-V binary. It integrates [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools). 
 
 ## APIs
 The APIs are listed in include/spvgen.h.
