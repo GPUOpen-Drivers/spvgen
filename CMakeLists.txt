@@ -23,7 +23,7 @@
  #
  #######################################################################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5) 
 
 PROJECT(spvgen VERSION 1 LANGUAGES C CXX)
 
