@@ -33,11 +33,13 @@ from __future__ import print_function
 
 import sys
 import os
+import os.path
 import string
 
 from optparse import OptionParser
 
-TargetDir = os.getcwd() + "/" # target directory the source code downloaded to.
+# Target directory the source code downloaded to by default.
+TargetDir = os.path.dirname(os.path.abspath(__file__))
 
 class GitRepo:
     def __init__(self, httpsUrl, moduleName, defaultRevision, extractDir):
