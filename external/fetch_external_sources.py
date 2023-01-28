@@ -37,7 +37,7 @@ import string
 
 from optparse import OptionParser
 
-TargetDir = os.getcwd() + "/"; # target directory the source code downloaded to.
+TargetDir = os.getcwd() + "/" # target directory the source code downloaded to.
 
 class GitRepo:
     def __init__(self, httpsUrl, moduleName, defaultRevision, extractDir):
@@ -49,36 +49,36 @@ class GitRepo:
     def GetRevision(self):
         SrcFile = TargetDir + "../CHANGES";
         if not os.path.exists(SrcFile):
-            print(SrcFile + " does not exist, default revision is " + self.revision);
-            return;
+            print(SrcFile + " does not exist, default revision is " + self.revision)
+            return
 
-        revFile = open(SrcFile,'r');
-        lines = revFile.readlines();
+        revFile = open(SrcFile,'r')
+        lines = revFile.readlines()
         found = False;
         for line in lines:
             if (found == True):
                 if (line.find("Commit:") == 0):
-                    self.revision = line[7:];
-                    break;
+                    self.revision = line[7:]
+                    break
             if (self.moduleName.lower() in line.lower()):
-                found = True;
+                found = True
             else:
-                found = False;
-        revFile.close();
+                found = False
+        revFile.close()
 
         if (found == False):
             print("Warning: Revision is not gotten from " + SrcFile + " correctly, please check it!!!")
         else:
-            print("Get the revision of " + self.extractDir + ": " + self.revision);
+            print("Get the revision of " + self.extractDir + ": " + self.revision)
 
     def CheckOut(self):
         fullDstPath = os.path.join(TargetDir, self.extractDir)
         if not os.path.exists(fullDstPath):
-            os.system("git clone " + self.httpsUrl + " " + fullDstPath);
+            os.system("git clone " + self.httpsUrl + " " + fullDstPath)
 
-        os.chdir(fullDstPath);
-        os.system("git fetch");
-        os.system("git checkout " + self.revision);
+        os.chdir(fullDstPath)
+        os.system("git fetch")
+        os.system("git checkout " + self.revision)
 
 PACKAGES = [
     GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "980ac508", "glslang"),
@@ -88,7 +88,7 @@ PACKAGES = [
 ]
 
 def GetOpt():
-    global TargetDir;
+    global TargetDir
 
     parser = OptionParser()
 
@@ -100,15 +100,15 @@ def GetOpt():
     (options, args) = parser.parse_args()
 
     if options.targetdir:
-        print("The source code is downloaded to %s" % (options.targetdir));
-        TargetDir = options.targetdir;
+        print("The source code is downloaded to %s" % (options.targetdir))
+        TargetDir = options.targetdir
     else:
-        print("The target directory is not specified, using default: " + TargetDir);
+        print("The target directory is not specified, using default: " + TargetDir)
 
 def DownloadSourceCode():
-    global TargetDir;
+    global TargetDir
 
-    os.chdir(TargetDir);
+    os.chdir(TargetDir)
 
     # Touch the spvgen CMakeLists.txt to ensure that the new directories get used.
     os.utime('../CMakeLists.txt', None)
@@ -117,5 +117,5 @@ def DownloadSourceCode():
         pkg.GetRevision()
         pkg.CheckOut()
 
-GetOpt();
-DownloadSourceCode();
+GetOpt()
+DownloadSourceCode()
