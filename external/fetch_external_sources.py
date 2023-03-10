@@ -40,17 +40,16 @@ from optparse import OptionParser
 TargetDir = os.getcwd() + "/"; # target directory the source code downloaded to.
 
 class GitRepo:
-    def __init__(self, httpsUrl, moduleName, defaultRevision, extractDir):
+    def __init__(self, httpsUrl, moduleName, extractDir):
         self.httpsUrl   = httpsUrl
         self.moduleName = moduleName
-        self.revision   = defaultRevision
         self.extractDir = extractDir
 
     def GetRevision(self):
         SrcFile = TargetDir + "../CHANGES";
         if not os.path.exists(SrcFile):
-            print(SrcFile + " does not exist, default revision is " + self.revision);
-            return;
+            print("Error: " + SrcFile + " does not exist!!!");
+            exit(1);
 
         revFile = open(SrcFile,'r');
         lines = revFile.readlines();
@@ -67,7 +66,8 @@ class GitRepo:
         revFile.close();
 
         if (found == False):
-            print("Warning: Revision is not gotten from " + SrcFile + " correctly, please check it!!!")
+            print("Error: Revision is not gotten from " + SrcFile + " correctly, please check it!!!")
+            exit(1)
         else:
             print("Get the revision of " + self.extractDir + ": " + self.revision);
 
@@ -81,10 +81,10 @@ class GitRepo:
         os.system("git checkout " + self.revision);
 
 PACKAGES = [
-    GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "980ac508", "glslang"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",   "spirv-tools",   "eb113f0f", "SPIRV-tools"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "85a1ed20", "SPIRV-tools/external/SPIRV-Headers"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",   "spirv-cross",   "57639196", "SPIRV-cross"),
+    GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "glslang"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",   "spirv-tools",   "SPIRV-tools"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "SPIRV-tools/external/SPIRV-Headers"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",   "spirv-cross",   "SPIRV-cross"),
 ]
 
 def GetOpt():

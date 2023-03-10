@@ -1,27 +1,28 @@
+
 # Note: this file is parsed by fetch_external_sources.py to get the revision,
 # please do not move the lines and change the formats at will.
 
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 980ac508
-Date: 2022/10/19
-980ac508 Merge pull request #3047 from akien-mga/spirv.hpp-dos2unix
+Commit: 1fb2f1d7
+Date: 2023/1/11
+1fb2f1d7 Merge pull request #3108 from greg-lunarg/i3105
 
 [SPIRV-tools]
-Commit: eb113f0f
-Date: 2022/10/20
-eb113f0f spirv-val: Improve PR 4831 error message (#4968)
+Commit: 7e8813bb
+Date: 2023/1/11
+7e8813bb  Validate version 5 of clspv reflection (#5050)
 
 [SPIRV-headers]
-Commit: 85a1ed20
-Date: 2022/10/5
-85a1ed20  Merge pull request #294 from kpet/clspv-texel-buffer
+Commit: d13b522
+Date: 2023/1/4
+d13b522 Merge pull request #312 from alan-baker/clspv-optional-operands
 
 [SPIRV-cross]
-Commit: 57639196
-Date: 2022/10/19
-57639196 Merge pull request #2039 from cdavis5e/raw-buffer-tess-input
+Commit: 49e4117c
+Date: 2023/1/12
+49e4117c Updates for main branch rename.
 
 
 
