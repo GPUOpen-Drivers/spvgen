@@ -83,7 +83,7 @@ class GitRepo:
 PACKAGES = [
     GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "glslang"),
     GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",   "spirv-tools",   "SPIRV-tools"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "SPIRV-tools/external/SPIRV-Headers"),
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "SPIRV-tools/external/spirv-headers"),
     GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",   "spirv-cross",   "SPIRV-cross"),
 ]
 
