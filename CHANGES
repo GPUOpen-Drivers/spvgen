@@ -5,24 +5,24 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: d9c3c753
-Date: 2023/5/10
-d9c3c753 Common.h: don't use to_string workaround on MSVC
+Commit: 396596ca
+Date: 2023/7/31
+396596ca Replace GlobalLock functions with std::mutex
 
 [SPIRV-tools]
-Commit: 51892874
-Date: 2023/5/10
-51892874 Run ADCE when the printf extension is used. (#5215)
+Commit: e68fe9be
+Date: 2023/7/27
+e68fe9be Add SPV_EXT_shader_atomic_float_add to allow lists (#5348)
 
 [SPIRV-headers]
-Commit: 268a061
-Date: 2023/5/3
-268a061 Reserve a single block of opcodes and enumerants for Saarland University
+Commit: ae89923
+Date: 2023/7/28
+ae89923 Merge pull request #364 from kpet/coopmatrix-khr-suffix
 
 [SPIRV-cross]
-Commit: 54b48a2f
-Date: 2023/5/10
-54b48a2f Merge pull request #2133 from georgeouzou/main
+Commit: bccaa94d
+Date: 2023/7/26
+bccaa94d Merge pull request #2178 from billhollings/arg-buff-fixes
 
 
 
