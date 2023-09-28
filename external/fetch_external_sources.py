@@ -26,96 +26,108 @@
 
 
 
+"""Module fetch external source."""
+
 # This script is used to download the glslang, SPIRV-Tools, and SPIRV-Headers from github.
 
 # __future__ must be at the beginning of the file
 from __future__ import print_function
 
-import sys
 import os
-import string
+import sys
+import argparse
 
-from optparse import OptionParser
-
-TargetDir = os.getcwd() + "/"; # target directory the source code downloaded to.
+target_dir = os.getcwd() + "/" # target directory the source code downloaded to.
 
 class GitRepo:
-    def __init__(self, httpsUrl, moduleName, extractDir):
-        self.httpsUrl   = httpsUrl
-        self.moduleName = moduleName
-        self.extractDir = extractDir
+    """Class representing a git repo"""
+    def __init__(self, https_url, module_name, extract_dir):
+        self.https_url   = https_url
+        self.module_name = module_name
+        self.extract_dir = extract_dir
+        self.revision    = ''
 
-    def GetRevision(self):
-        SrcFile = TargetDir + "../CHANGES";
-        if not os.path.exists(SrcFile):
-            print("Error: " + SrcFile + " does not exist!!!");
-            exit(1);
+    def get_revision(self):
+        """Function get revision."""
+        src_file = globals()['target_dir'] + "../CHANGES"
+        if not os.path.exists(src_file):
+            print("Error:", src_file, "does not exist!!!")
+            sys.exit(1)
 
-        revFile = open(SrcFile,'r');
-        lines = revFile.readlines();
-        found = False;
-        for line in lines:
-            if (found == True):
-                if (line.find("Commit:") == 0):
-                    self.revision = line[7:];
-                    break;
-            if (self.moduleName.lower() in line.lower()):
-                found = True;
-            else:
-                found = False;
-        revFile.close();
+        with open(src_file,'r', encoding="utf-8") as rev_file:
+            lines = rev_file.readlines()
+            found = False
+            for line in lines:
+                if found:
+                    if line.find("Commit:") == 0:
+                        # line is in format: "Commit: HASH". Save only hash.
+                        self.revision = line[8:]
+                        break
+                found = self.module_name.lower() in line.lower()
+            rev_file.close()
 
-        if (found == False):
-            print("Error: Revision is not gotten from " + SrcFile + " correctly, please check it!!!")
-            exit(1)
+        if not found:
+            print("Error: Revision is not gotten from", src_file, "correctly, please check it!!!")
+            sys.exit(1)
         else:
-            print("Get the revision of " + self.extractDir + ": " + self.revision);
+            print("Get the revision of", self.extract_dir + ":", self.revision)
 
-    def CheckOut(self):
-        fullDstPath = os.path.join(TargetDir, self.extractDir)
-        if not os.path.exists(fullDstPath):
-            os.system("git clone " + self.httpsUrl + " " + fullDstPath);
+    def checkout(self):
+        """Function checkout code."""
+        full_dst_path = os.path.join(globals()['target_dir'], self.extract_dir)
+        if not os.path.exists(full_dst_path):
+            os.system("git clone " + self.https_url + " " + full_dst_path)
 
-        os.chdir(fullDstPath);
-        os.system("git fetch");
-        os.system("git checkout " + self.revision);
+        os.chdir(full_dst_path)
+        os.system("git fetch")
+        os.system("git checkout " + self.revision)
 
 PACKAGES = [
-    GitRepo("https://github.com/KhronosGroup/glslang.git",       "glslang",       "glslang"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",   "spirv-tools",   "SPIRV-tools"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git", "spirv-headers", "SPIRV-tools/external/spirv-headers"),
-    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",   "spirv-cross",   "SPIRV-cross"),
+    GitRepo("https://github.com/KhronosGroup/glslang.git",
+            "glslang",
+            "glslang"),
+
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Tools.git",
+            "spirv-tools",
+            "SPIRV-tools"),
+
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Headers.git",
+            "spirv-headers",
+            "SPIRV-tools/external/spirv-headers"),
+
+    GitRepo("https://github.com/KhronosGroup/SPIRV-Cross.git",
+            "spirv-cross",
+            "SPIRV-cross"),
 ]
 
-def GetOpt():
-    global TargetDir;
+def get_opt():
+    """Class for parser arguments."""
+    parser = argparse.ArgumentParser(description='Fetching external source.')
 
-    parser = OptionParser()
-
-    parser.add_option("-t", "--targetdir", action="store",
-                  type="string",
-                  dest="targetdir",
+    parser.add_argument("-t", "--target_dir", action="store",
+                  type=str,
+                  default=None,
+                  dest="target_dir",
                   help="the target directory source code downloaded to")
 
-    (options, args) = parser.parse_args()
+    args = parser.parse_args()
 
-    if options.targetdir:
-        print("The source code is downloaded to %s" % (options.targetdir));
-        TargetDir = options.targetdir;
+    if args.target_dir:
+        print(f"The source code is downloaded to {args.target_dir}")
+        globals()['target_dir'] = args.target_dir
     else:
-        print("The target directory is not specified, using default: " + TargetDir);
+        print("The target directory is not specified, using default:", globals()['target_dir'])
 
-def DownloadSourceCode():
-    global TargetDir;
-
-    os.chdir(TargetDir);
+def download_source_code():
+    """Class for download source code."""
+    os.chdir(globals()['target_dir'])
 
     # Touch the spvgen CMakeLists.txt to ensure that the new directories get used.
     os.utime('../CMakeLists.txt', None)
 
     for pkg in PACKAGES:
-        pkg.GetRevision()
-        pkg.CheckOut()
+        pkg.get_revision()
+        pkg.checkout()
 
-GetOpt();
-DownloadSourceCode();
+get_opt()
+download_source_code()
