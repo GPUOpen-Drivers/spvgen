@@ -1522,7 +1522,10 @@ bool SH_IMPORT_EXPORT spvOptimizeSpirv(
     }
     else
     {
-        // TODO: Parse options and set specified optimization pass
+        for (unsigned i = 0; i < optionCount; i++)
+        {
+            optimizer.RegisterPassFromFlag(options[i]);
+        }
     }
 
     std::vector<uint32_t> binary;
