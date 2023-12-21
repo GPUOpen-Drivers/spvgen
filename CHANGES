@@ -5,24 +5,25 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 396596ca
-Date: 2023/7/31
-396596ca Replace GlobalLock functions with std::mutex
+Commit: f8dd5add
+Date: 2023/10/30
+f8dd5add Bump github/codeql-action from 2.22.4 to 2.22.5
 
 [SPIRV-tools]
-Commit: e68fe9be
-Date: 2023/7/27
-e68fe9be Add SPV_EXT_shader_atomic_float_add to allow lists (#5348)
+Commit: 4f014aff
+Date: 2023/10/26
+4f014aff Roll external/re2/ 601d9ea3e..a0b3bc60c (1 commit) (#5453)
 
 [SPIRV-headers]
-Commit: ae89923
-Date: 2023/7/28
-ae89923 Merge pull request #364 from kpet/coopmatrix-khr-suffix
+Commit: 88bc5e3
+Date: 2023/10/18
+88bc5e3 Headers support for new FPGAMemoryAttributesINTEL (#384)
 
 [SPIRV-cross]
-Commit: bccaa94d
-Date: 2023/7/26
-bccaa94d Merge pull request #2178 from billhollings/arg-buff-fixes
+Commit: 637cff3d
+Date: 2023/10/23
+637cff3d Merge pull request #2220 from KhronosGroup/pr-2208
+
 
 
 
