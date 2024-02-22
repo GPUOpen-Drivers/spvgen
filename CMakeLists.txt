@@ -1,7 +1,7 @@
 ##
  #######################################################################################################################
  #
- #  Copyright (c) 2023 Advanced Micro Devices, Inc. All Rights Reserved.
+ #  Copyright (c) 2024 Advanced Micro Devices, Inc. All Rights Reserved.
  #
  #  Permission is hereby granted, free of charge, to any person obtaining a copy
  #  of this software and associated documentation files (the "Software"), to deal
@@ -56,16 +56,8 @@ set(SPIRV_SKIP_TESTS TRUE CACHE BOOL "" FORCE)
 set(SPIRV_SKIP_EXECUTABLES ON CACHE BOOL "OGLP override." FORCE)
 set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "OGLP override." FORCE)
 set(SPIRV_CROSS_CLI OFF CACHE BOOL "OGLP override." FORCE)
-set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
 
 # Build third party targets
-if(EXISTS ${THIRD_PARTY_PATH}/glslang)
-    set(GLSLANG_PATH ${THIRD_PARTY_PATH}/glslang)
-else()
-    set(GLSLANG_PATH ${PROJECT_SOURCE_DIR}/external/glslang)
-endif()
-add_subdirectory(${GLSLANG_PATH} external/glslang)
-
 if(EXISTS ${THIRD_PARTY_PATH}/SPIRV-tools)
     set(SPIRV_TOOLS_PATH ${THIRD_PARTY_PATH}/SPIRV-tools)
 else()
@@ -73,6 +65,13 @@ else()
 endif()
 set(SPIRV_WERROR ${SPVGEN_ENABLE_WERROR} CACHE BOOL "${PROJECT_NAME} override." FORCE)
 add_subdirectory(${SPIRV_TOOLS_PATH} external/SPIRV-tools)
+
+if(EXISTS ${THIRD_PARTY_PATH}/glslang)
+    set(GLSLANG_PATH ${THIRD_PARTY_PATH}/glslang)
+else()
+    set(GLSLANG_PATH ${PROJECT_SOURCE_DIR}/external/glslang)
+endif()
+add_subdirectory(${GLSLANG_PATH} external/glslang)
 
 if(EXISTS ${THIRD_PARTY_PATH}/SPIRV-cross)
     set(SPIRV_CROSS_PATH ${THIRD_PARTY_PATH}/SPIRV-cross)
@@ -98,7 +97,7 @@ PRIVATE
     ${SPIRV_CROSS_PATH}
 )
 
-target_link_libraries(spvgen_base glslang HLSL OGLCompiler SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c)
+target_link_libraries(spvgen_base glslang SPIRV SPIRV-Tools SPIRV-Tools-opt spirv-cross-c)
 
 # Touch an empty source file
 set(EMPTY_SOURCE_FILES ${CMAKE_CURRENT_BINARY_DIR}/empty.cpp)
@@ -123,12 +122,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set_property(TARGET spvgen_static PROPERTY FOLDER spvgen)
     set_property(TARGET glslang PROPERTY FOLDER spvgen/glslang)
     set_property(TARGET GenericCodeGen PROPERTY FOLDER spvgen/glslang)
-    set_property(TARGET MachineIndependent PROPERTY FOLDER spvgen/glslang)
-    set_property(TARGET OGLCompiler PROPERTY FOLDER spvgen/glslang)
-    set_property(TARGET OSDependent PROPERTY FOLDER spvgen/glslang)
     set_property(TARGET SPIRV PROPERTY FOLDER spvgen/glslang)
-    set_property(TARGET SPVRemapper PROPERTY FOLDER spvgen/glslang)
-    set_property(TARGET HLSL PROPERTY FOLDER spvgen/glslang)
 
     set_property(TARGET spirv-cross-c PROPERTY FOLDER spvgen/spirv-cross)
     set_property(TARGET spirv-cross-core PROPERTY FOLDER spvgen/spirv-cross)
