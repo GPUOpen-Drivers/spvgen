@@ -134,7 +134,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set_property(TARGET spirv-cross-msl PROPERTY FOLDER spvgen/spirv-cross)
 
     set_property(TARGET spirv-tools-pkg-config PROPERTY FOLDER spvgen/SPIRV-Tools)
-    set_property(TARGET spirv-tools-shared-pkg-config PROPERTY FOLDER spvgen/SPIRV-Tools)
     set_property(TARGET spirv-tools-build-version PROPERTY FOLDER spvgen/SPIRV-Tools)
     set_property(TARGET spirv-tools-header-DebugInfo PROPERTY FOLDER spvgen/SPIRV-Tools)
     set_property(TARGET spirv-tools-vimsyntax PROPERTY FOLDER spvgen/SPIRV-Tools)

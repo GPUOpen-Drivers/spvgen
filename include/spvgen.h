@@ -36,14 +36,14 @@
 #define SPVGEN_MAJOR_VERSION(version)  (version >> 16)
 #define SPVGEN_MINOR_VERSION(version)  (version & 0xFFFF)
 
-#ifdef _WIN32
+#if defined(_WIN32)
     #define SPVAPI __cdecl
 #else
     #define SPVAPI
 #endif
 
 #ifndef SH_IMPORT_EXPORT
-    #ifdef _WIN32
+    #if defined(_WIN32)
         #ifdef SH_EXPORTING
             #define SH_IMPORT_EXPORT __declspec(dllexport)
         #else
@@ -363,7 +363,7 @@ DEFI_EXPORT_FUNC(spvFreeBuffer);
 DEFI_EXPORT_FUNC(spvGetVersion);
 
 // SPIR-V generator Windows implementation
-#ifdef _WIN32
+#if defined(_WIN32)
 
 #include <windows.h>
 // SPIR-V generator Windows DLL name
@@ -425,7 +425,7 @@ bool SPVAPI InitSpvGen(
         libNameBuffer += pLibName;
         pLibName = libNameBuffer.c_str();
     }
-#ifdef _WIN32
+#if defined(_WIN32)
     HMODULE hModule = LoadLibraryA(pLibName);
 #else
     void* hModule = dlopen(pLibName, RTLD_GLOBAL | RTLD_NOW);

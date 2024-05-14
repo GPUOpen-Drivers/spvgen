@@ -5,24 +5,24 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 57d86ab7
-Date: 2024/1/9
-57d86ab7 cmake: remove generation of deprecated *Targets.cmake files
+Commit: 32257786
+Date: 2024/3/21
+32257786 Fix an issue of getExtBuiltins()
 
 [SPIRV-tools]
-Commit: c96fe8b9
-Date: 2024/1/18
-c96fe8b9 spirv-val: Re-enable OpControlBarrier VU (#5527)
+Commit: fe7bae09
+Date: 2024/3/25
+fe7bae09 Minor fix to cmakelists to avoid rerunning command each build (#5620)
 
 [SPIRV-headers]
-Commit: 7b030970
-Date: 2024/1/17
-7b030970 Register Zig Compiler tool (#405)
+Commit: 7d500c4d
+Date: 2024/3/22
+7d500c4d  Register LLVM SPIR-V Backend as SPIR-V generator (#423)
 
 [SPIRV-cross]
-Commit: 64f64c83
-Date: 2024/1/16
-64f64c83 Merge pull request #2266 from KhronosGroup/pr-2257
+Commit: 7d92d7d8
+Date: 2024/3/18
+7d92d7d8 Merge pull request #2299 from KhronosGroup/fix-2285
 
 
 
