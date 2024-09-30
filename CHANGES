@@ -5,37 +5,22 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 32257786
-Date: 2024/3/21
-32257786 Fix an issue of getExtBuiltins()
+Commit: 12cbda95
+Date: 2024/8/29
+12cbda95 Fix test results after merging #3662
 
 [SPIRV-tools]
-Commit: fe7bae09
-Date: 2024/3/25
-fe7bae09 Minor fix to cmakelists to avoid rerunning command each build (#5620)
+Commit: b21dda0e
+Date: 2024/8/29
+b21dda0e Validate presence of Stride operand to OpCooperativeMatrix{Load,Store}KHR (#5777)
 
 [SPIRV-headers]
-Commit: 7d500c4d
-Date: 2024/3/22
-7d500c4d  Register LLVM SPIR-V Backend as SPIR-V generator (#423)
+Commit: efb6b40
+Date: 2024/8/28
+efb6b40 add support for SPV_INTEL_subgroup_buffer_prefetch (#442)
 
 [SPIRV-cross]
-Commit: 7d92d7d8
-Date: 2024/3/18
-7d92d7d8 Merge pull request #2299 from KhronosGroup/fix-2285
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Commit: dae7a689
+Date: 2024/8/23
+dae7a689 Merge pull request #2367 from KhronosGroup/spec-constant-switch
 
