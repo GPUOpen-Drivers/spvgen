@@ -1,7 +1,7 @@
 /*
  ***********************************************************************************************************************
  *
- *  Copyright (c) 2015-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+ *  Copyright (c) 2015-2025 Advanced Micro Devices, Inc. All Rights Reserved.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -399,7 +399,7 @@ static const char* SpvGeneratorName = "spvgen.so";
 #define INIT_OPT_FUNC(func) \
   g_pfn##func = reinterpret_cast<PFN_##func>(dlsym(hModule, #func));
 
-#endif
+#endif // defined(_WIN32)
 
 #define DEINITFUNC(func) g_pfn##func = nullptr;
 

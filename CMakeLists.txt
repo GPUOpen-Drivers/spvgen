@@ -1,7 +1,7 @@
 ##
  #######################################################################################################################
  #
- #  Copyright (c) 2024 Advanced Micro Devices, Inc. All Rights Reserved.
+ #  Copyright (c) 2025 Advanced Micro Devices, Inc. All Rights Reserved.
  #
  #  Permission is hereby granted, free of charge, to any person obtaining a copy
  #  of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,8 @@ if(NOT DEFINED THIRD_PARTY_PATH)
     # Third_party path
     if(EXISTS ${PROJECT_SOURCE_DIR}/../third_party)
         set(THIRD_PARTY_PATH ${PROJECT_SOURCE_DIR}/../third_party CACHE PATH "The path of third_party.")
+    else()
+        set(THIRD_PARTY_PATH ${PROJECT_SOURCE_DIR}/../../../third_party CACHE PATH "The path of third_party.")
     endif()
 endif()
 
