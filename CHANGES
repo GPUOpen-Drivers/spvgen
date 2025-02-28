@@ -1,3 +1,27 @@
+##
+ #######################################################################################################################
+ #
+ #  Copyright (c) 2018-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+ #
+ #  Permission is hereby granted, free of charge, to any person obtaining a copy
+ #  of this software and associated documentation files (the "Software"), to deal
+ #  in the Software without restriction, including without limitation the rights
+ #  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ #  copies of the Software, and to permit persons to whom the Software is
+ #  furnished to do so, subject to the following conditions:
+ #
+ #  The above copyright notice and this permission notice shall be included in all
+ #  copies or substantial portions of the Software.
+ #
+ #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ #  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ #  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ #  SOFTWARE.
+ #
+ #######################################################################################################################
 
 # Note: this file is parsed by fetch_external_sources.py to get the revision,
 # please do not move the lines and change the formats at will.
@@ -5,23 +29,38 @@
 Promotion history for /spvgen/external
 
 [glslang]
-Commit: 3a2834e7
-Date: 2024/12/16
-3a2834e7 Remove incorrect extension dependency from 16bit float Modf
-
+Commit: 1b65bd602b2
+Date: 2025/02/04
+1b65bd602b2 Implement GL_NV_cooperative_vector
 
 [SPIRV-tools]
-Commit: 9295a8b9
-Date: 2024/12/18
-9295a8b9 Add OpImageSampleFootprintNV to IsAllowedSampledImageOperand (#5914)
+Commit: ce37fd67f83
+Date: 2025/02/01
+ce37fd67f83 Add validation for SPV_NV_linear_swept_spheres. (#5975)
 
 [SPIRV-headers]
-Commit: 3f17b2a
-Date: 2024/12/4
-3f17b2a [SPIRV] Add generator magic number (#467)
+Commit: e7294a8ebed
+Date: 2025/01/30
+e7294a8ebed Add headers for SPV_NV_linear_swept_spheres. (#483)
 
 [SPIRV-cross]
 Commit: 6173e24b
 Date: 2024/12/13
 6173e24b  Merge pull request #2430 from KhronosGroup/hlsl-mesh-single-clip-cull-fix
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
